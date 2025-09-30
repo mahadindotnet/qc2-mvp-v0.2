@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 export default function TestSupabase() {
@@ -11,7 +12,7 @@ export default function TestSupabase() {
     const testConnection = async () => {
       try {
         // Test basic connection
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('_test_connection')
           .select('*')
           .limit(1)
@@ -70,12 +71,12 @@ export default function TestSupabase() {
         </div>
 
         <div className="mt-6 text-center">
-          <a 
+          <Link 
             href="/" 
             className="text-blue-600 hover:text-blue-800 underline"
           >
             ← Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
