@@ -1,0 +1,17 @@
+{
+  "name": "qc2-mvp-v0.2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd tshirt-mvp && npm run dev",
+    "build": "cd tshirt-mvp && npm run build",
+    "start": "cd tshirt-mvp && npm run start",
+    "lint": "cd tshirt-mvp && npm run lint"
+  },
+  "dependencies": {
+    "next": "^15.5.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
