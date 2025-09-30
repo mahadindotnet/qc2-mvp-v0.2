@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd tshirt-mvp && npm install && npm run build",
-  "outputDirectory": "tshirt-mvp/.next",
-  "installCommand": "cd tshirt-mvp && npm install",
-  "devCommand": "cd tshirt-mvp && npm run dev",
-  "framework": "nextjs"
-}
