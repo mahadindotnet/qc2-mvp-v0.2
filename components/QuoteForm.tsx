@@ -99,6 +99,7 @@ interface QuoteFormData {
     email: string
     phone: string
     company?: string
+    address?: string
     message: string
   }
 }
@@ -114,6 +115,7 @@ export default function QuoteForm() {
       email: '',
       phone: '',
       company: '',
+      address: '',
       message: ''
     }
   })
