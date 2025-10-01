@@ -1,19 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowRight, Receipt, Shield, CheckCircle2, Home, ShoppingBag, Phone, Mail } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowRight, Receipt, CheckCircle2, Home, ShoppingBag, Phone, Mail } from 'lucide-react';
+import { useEffect, useState, Suspense } from 'react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get('orderId') || 'N/A';
   const total = searchParams.get('total') || '0';
   const [showConfetti, setShowConfetti] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
   // Prevent backward navigation and duplicate orders
   useEffect(() => {
@@ -260,7 +258,7 @@ export default function ThankYouPage() {
             Your Custom T-Shirt Order Has Been Placed!
           </h2>
           <p className="text-lg text-gray-600 mb-6">
-            We've received your order and will start working on it right away. You'll receive a confirmation email shortly.
+            We&apos;ve received your order and will start working on it right away. You&apos;ll receive a confirmation email shortly.
           </p>
 
           {/* Important Notice */}
@@ -347,7 +345,7 @@ export default function ThankYouPage() {
                 </div>
                 <div>
                   <p className="font-medium">Order Processing (Within 1 hour)</p>
-                  <p className="text-xs text-gray-500">We'll review your order details and prepare for production</p>
+                  <p className="text-xs text-gray-500">We&apos;ll review your order details and prepare for production</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -365,7 +363,7 @@ export default function ThankYouPage() {
                 </div>
                 <div>
                   <p className="font-medium">Design Proof (If Requested)</p>
-                  <p className="text-xs text-gray-500">We'll send you a preview for approval before printing</p>
+                  <p className="text-xs text-gray-500">We&apos;ll send you a preview for approval before printing</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -383,7 +381,7 @@ export default function ThankYouPage() {
                 </div>
                 <div>
                   <p className="font-medium">Delivery (Same Day)</p>
-                  <p className="text-xs text-gray-500">We'll deliver to your address and collect payment upon delivery</p>
+                  <p className="text-xs text-gray-500">We&apos;ll deliver to your address and collect payment upon delivery</p>
                 </div>
               </div>
             </div>
@@ -444,11 +442,26 @@ export default function ThankYouPage() {
           {/* Manual navigation notice */}
           <div className="mt-6 p-4 bg-gray-100 rounded-lg">
             <p className="text-sm text-gray-600">
-              Take your time to review your order details. Use the buttons above to navigate when you're ready.
+              Take your time to review your order details. Use the buttons above to navigate when you&apos;re ready.
             </p>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your order details...</p>
+        </div>
+      </div>
+    }>
+      <ThankYouContent />
+    </Suspense>
   );
 }

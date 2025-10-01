@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { ShoppingCart, Palette, Plus, Minus } from 'lucide-react'
 import { HexColorPicker } from 'react-colorful'
 import { toast } from 'sonner'

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { ShoppingCart, Palette, Shirt, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, Palette, Plus, Minus } from 'lucide-react'
 import { HexColorPicker } from 'react-colorful'
 import { toast } from 'sonner'
 import FrontBackCustomization from './FrontBackCustomization'
@@ -412,7 +411,7 @@ export default function TShirtDesigner() {
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 text-center">Order your Custom T-Shirt</h2>
         <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 text-center">
           Send Us Your Concept Through The Form,<br />
-          And Our Expert Team Will Craft A Professional Design That's Ready To Print.
+                  And Our Expert Team Will Craft A Professional Design That&apos;s Ready To Print.
         </p>
         
         {/* Shirt Color Selection */}
@@ -905,25 +904,47 @@ export default function TShirtDesigner() {
           <div className="text-sm text-gray-700 space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="font-semibold text-gray-800 mb-2">📁 File Types</p>
-                <p className="text-gray-600">JPG, PNG and SVG file types supported</p>
+                <p className="font-semibold text-gray-800 mb-2">📁 Supported File Types</p>
+                <p className="text-gray-600">JPG, PNG, SVG, PDF, AI, PSD, EPS</p>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 mb-2">📏 File Size</p>
-                <p className="text-gray-600">Maximum 100 MiB (JPG, PNG) or 20 MiB (SVG)</p>
+                <p className="font-semibold text-gray-800 mb-2">📏 File Size Limits</p>
+                <p className="text-gray-600">Max 50 MB per file (recommended: under 25 MB)</p>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 mb-2">🎯 Print Area Size</p>
-                <p className="text-gray-600">3951 × 4800 px (300 DPI)</p>
+                <p className="font-semibold text-gray-800 mb-2">🎯 Recommended Print Area</p>
+                <p className="text-gray-600">12" × 16" at 300 DPI (3600 × 4800 px)</p>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 mb-2">🔍 Maximum Resolution</p>
-                <p className="text-gray-600">30000 x 30000 px</p>
+                <p className="font-semibold text-gray-800 mb-2">🔍 Resolution Requirements</p>
+                <p className="text-gray-600">Minimum 300 DPI, maximum 600 DPI</p>
               </div>
             </div>
+            
+            <div className="mt-4 space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <p className="text-sm text-gray-700">
+                  <strong>Vector files (SVG, AI, EPS):</strong> Best quality, scalable, preferred for logos and text
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <p className="text-sm text-gray-700">
+                  <strong>Raster images (JPG, PNG):</strong> Use 300+ DPI, avoid upscaling low-res images
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <p className="text-sm text-gray-700">
+                  <strong>Color mode:</strong> RGB for digital printing, CMYK for professional design files
+                </p>
+              </div>
+            </div>
+            
             <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-orange-700 font-medium text-sm">
-                💡 For best print quality, use high-resolution images (300 DPI) with transparent backgrounds (PNG/SVG)
+                💡 <strong>Pro Tip:</strong> For best results, provide vector files (SVG/AI) or high-resolution PNG with transparent backgrounds. Avoid JPEG for logos or text-heavy designs.
               </p>
             </div>
           </div>

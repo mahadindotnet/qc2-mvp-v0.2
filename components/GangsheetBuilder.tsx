@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { Stage, Layer, Image, Group, Rect, Line } from 'react-konva'
+import Konva from 'konva'
 import { useImage } from 'react-konva-utils'
 import { useDropzone } from 'react-dropzone'
 import jsPDF from 'jspdf'
@@ -39,7 +40,7 @@ const GangsheetBuilder: React.FC<GangsheetBuilderProps> = ({ onPriceChange }) =>
   const [gridSize, setGridSize] = useState(20)
   const [totalPrice, setTotalPrice] = useState(0)
   
-  const stageRef = useRef<any>(null)
+  const stageRef = useRef<Konva.Stage>(null)
 
   // Gangsheet dimensions: 22x24 inches at 300 DPI
   const GANGSHEET_WIDTH = 6600  // 22 inches * 300 DPI
@@ -385,7 +386,7 @@ const GangsheetItemComponent: React.FC<{
   onSelect: (id: string) => void
   onUpdate: (item: GangsheetItem) => void
 }> = ({ item, selectedItem, showGrid, gridSize, onSelect, onUpdate }) => {
-  const image = useImage(item.imageUrl)
+  const [image] = useImage(item.imageUrl)
   
   const snapToGrid = (value: number) => {
     return Math.round(value / gridSize) * gridSize

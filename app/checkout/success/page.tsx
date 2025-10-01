@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CheckCircle, Package, Mail, Phone, MapPin, ArrowRight, Download } from 'lucide-react'
@@ -26,7 +26,7 @@ interface OrderDetails {
   proof_contact_details?: string
 }
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null)
@@ -76,7 +76,7 @@ export default function CheckoutSuccessPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Order not found</h2>
-          <p className="text-gray-600">The order you're looking for doesn't exist.</p>
+          <p className="text-gray-600">The order you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     )
@@ -96,7 +96,7 @@ export default function CheckoutSuccessPage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
           <p className="text-gray-600">
-            Thank you for your order. We'll start working on your custom T-shirt right away.
+            Thank you for your order. We&apos;ll start working on your custom T-shirt right away.
           </p>
         </motion.div>
 
@@ -206,7 +206,7 @@ export default function CheckoutSuccessPage() {
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="font-semibold text-blue-900 mb-2">Design Proof Required</h3>
                 <p className="text-sm text-blue-800">
-                  We'll send your design proof to: {orderDetails.proof_contact_details}
+                  We&apos;ll send your design proof to: {orderDetails.proof_contact_details}
                 </p>
                 <p className="text-xs text-blue-700 mt-2">
                   Please review and approve before we proceed with printing.
@@ -231,7 +231,7 @@ export default function CheckoutSuccessPage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Order Processing</h3>
               <p className="text-sm text-gray-600">
-                We'll review your order and prepare your custom T-shirt for production.
+                We&apos;ll review your order and prepare your custom T-shirt for production.
               </p>
             </div>
             
@@ -242,7 +242,7 @@ export default function CheckoutSuccessPage() {
               <h3 className="font-semibold text-gray-900 mb-2">Design Proof</h3>
               <p className="text-sm text-gray-600">
                 {orderDetails.design_proof_required 
-                  ? "We'll send you a design proof for approval before printing."
+                  ? "We&apos;ll send you a design proof for approval before printing."
                   : "Your order will proceed directly to printing."
                 }
               </p>
@@ -305,4 +305,19 @@ export default function CheckoutSuccessPage() {
       </div>
     </div>
   )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading order details...</p>
+        </div>
+      </div>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
+  );
 }

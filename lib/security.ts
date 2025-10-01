@@ -1,18 +1,22 @@
 // Security utilities for file upload protection
 import { NextRequest } from 'next/server'
 
-// Allowed MIME types for image uploads
+// Allowed MIME types for print file uploads
 export const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
   'image/jpg', 
   'image/png',
   'image/gif',
   'image/webp',
-  'image/svg+xml'
+  'image/svg+xml',
+  'application/pdf',
+  'application/postscript',
+  'application/illustrator',
+  'image/vnd.adobe.photoshop'
 ] as const
 
-// Maximum file size (10MB)
-export const MAX_FILE_SIZE = 10 * 1024 * 1024
+// Maximum file size (50MB for print files)
+export const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 // Suspicious file patterns
 export const SUSPICIOUS_PATTERNS = [
@@ -32,13 +36,17 @@ export const SUSPICIOUS_PATTERNS = [
 ]
 
 // File extension validation mapping
-export const VALID_EXTENSIONS = {
+export const VALID_EXTENSIONS: Record<string, readonly string[]> = {
   'image/jpeg': ['jpg', 'jpeg'],
   'image/png': ['png'],
   'image/gif': ['gif'],
   'image/webp': ['webp'],
-  'image/svg+xml': ['svg']
-} as const
+  'image/svg+xml': ['svg'],
+  'application/pdf': ['pdf'],
+  'application/postscript': ['eps', 'ai'],
+  'application/illustrator': ['ai'],
+  'image/vnd.adobe.photoshop': ['psd']
+}
 
 export interface FileValidationResult {
   isValid: boolean
@@ -59,8 +67,7 @@ export function validateFileSecurity(
 ): FileValidationResult {
   const {
     maxSize = MAX_FILE_SIZE,
-    allowedTypes = ALLOWED_IMAGE_TYPES,
-    strictValidation = true
+    allowedTypes = ALLOWED_IMAGE_TYPES
   } = options
 
   // 1. Check file size
@@ -80,7 +87,7 @@ export function validateFileSecurity(
   }
 
   // 3. Validate MIME type
-  if (!allowedTypes.includes(file.type as any)) {
+  if (!allowedTypes.includes(file.type as typeof allowedTypes[number])) {
     return {
       isValid: false,
       error: `File type ${file.type} is not allowed. Only image files are permitted.`
@@ -89,9 +96,9 @@ export function validateFileSecurity(
 
   // 4. Validate file extension matches MIME type
   const fileExtension = file.name.split('.').pop()?.toLowerCase()
-  if (fileExtension && VALID_EXTENSIONS[file.type as keyof typeof VALID_EXTENSIONS]) {
-    const validExtensions = VALID_EXTENSIONS[file.type as keyof typeof VALID_EXTENSIONS]
-    if (!validExtensions.includes(fileExtension)) {
+  if (fileExtension && file.type in VALID_EXTENSIONS) {
+    const validExtensions = VALID_EXTENSIONS[file.type]
+    if (validExtensions && !validExtensions.includes(fileExtension)) {
       return {
         isValid: false,
         error: 'File extension does not match the file type'
@@ -150,7 +157,7 @@ export function isLikelyImageFile(file: File): boolean {
   }
   
   // Check MIME type
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type as any)) {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type as typeof ALLOWED_IMAGE_TYPES[number])) {
     return false
   }
   
@@ -248,5 +255,5 @@ export function getClientIP(request: NextRequest): string {
     return realIP
   }
   
-  return request.ip || 'unknown'
+  return 'unknown'
 }

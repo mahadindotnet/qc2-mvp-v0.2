@@ -1,12 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+
+interface TShirtDesign {
+  shirtColor: string
+  printAreas: Array<{
+    id: string
+    name: string
+    price: number
+    selected: boolean
+  }>
+  size: string
+  printType: string
+  quantity: number
+  turnaroundTime: {
+    label: string
+    price: number
+  }
+  designProof: string
+  proofContactMethod: string
+  contactDetails: string
+  areaInstructions: Array<{
+    areaId: string
+    instructions: string
+  }>
+  textElements: Array<{
+    id: string
+    text: string
+    color: string
+    fontSize: number
+    area: string
+  }>
+  imageElements: Array<{
+    id: string
+    imageUrl: string
+    area: string
+    width: number
+    height: number
+    fileName?: string
+  }>
+}
 
 interface FrontBackCustomizationProps {
-  design: any
-  setDesign: (design: any) => void
+  design: TShirtDesign
+  setDesign: (design: TShirtDesign | ((prev: TShirtDesign) => TShirtDesign)) => void
   imageUploadErrors: {[key: string]: string}
-  setImageUploadErrors: (errors: {[key: string]: string}) => void
+  setImageUploadErrors: (errors: {[key: string]: string} | ((prev: {[key: string]: string}) => {[key: string]: string})) => void
 }
 
 export default function FrontBackCustomization({ 

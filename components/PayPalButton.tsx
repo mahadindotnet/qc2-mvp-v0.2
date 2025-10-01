@@ -10,9 +10,53 @@ interface PayPalButtonProps {
   onError: (error: string) => void
 }
 
+interface PayPalActions {
+  order: {
+    create: (orderData: PayPalOrderData) => Promise<string>
+    capture: () => Promise<PayPalOrder>
+  }
+}
+
+interface PayPalOrderData {
+  purchase_units: Array<{
+    amount: {
+      value: string
+      currency_code: string
+    }
+    description: string
+  }>
+}
+
+interface PayPalOrder {
+  id: string
+  purchase_units: Array<{
+    payments: {
+      captures: Array<{
+        id: string
+      }>
+    }
+  }>
+}
+
+interface PayPalButtonConfig {
+  createOrder: (data: unknown, actions: PayPalActions) => Promise<string>
+  onApprove: (data: unknown, actions: PayPalActions) => Promise<void>
+  onError: (err: unknown) => void
+  style: {
+    layout: string
+    color: string
+    shape: string
+    label: string
+  }
+}
+
 declare global {
   interface Window {
-    paypal?: any
+    paypal?: {
+      Buttons: (config: PayPalButtonConfig) => {
+        render: (element: HTMLDivElement) => void
+      }
+    }
   }
 }
 
@@ -27,7 +71,7 @@ export default function PayPalButton({ amount, orderId, onSuccess, onError }: Pa
     script.onload = () => {
       if (window.paypal && paypalRef.current) {
         window.paypal.Buttons({
-          createOrder: (data: any, actions: any) => {
+          createOrder: async (data: unknown, actions: PayPalActions) => {
             return actions.order.create({
               purchase_units: [{
                 amount: {
@@ -38,7 +82,7 @@ export default function PayPalButton({ amount, orderId, onSuccess, onError }: Pa
               }]
             })
           },
-          onApprove: async (data: any, actions: any) => {
+          onApprove: async (data: unknown, actions: PayPalActions) => {
             try {
               const order = await actions.order.capture()
               
@@ -74,7 +118,7 @@ export default function PayPalButton({ amount, orderId, onSuccess, onError }: Pa
               })
             }
           },
-          onError: (err: any) => {
+          onError: (err: unknown) => {
             console.error('PayPal error:', err)
             onError('Payment was cancelled or failed.')
             toast.error('Payment cancelled', {

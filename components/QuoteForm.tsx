@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Upload, Plus, Minus, X, FileText, Image as ImageIcon, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Search, Upload, Plus, Minus, X, AlertTriangle, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import confetti from 'canvas-confetti'
 
@@ -313,7 +313,7 @@ export default function QuoteForm() {
     }))
   }
 
-  const updateProduct = (index: number, field: string, value: any) => {
+  const updateProduct = (index: number, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       selectedProducts: prev.selectedProducts.map((product, i) => 
@@ -375,8 +375,40 @@ export default function QuoteForm() {
     }
     
     try {
-      // Here you would typically send the quote request to your backend
-      console.log('Quote request:', formData)
+      // Prepare form data for API submission
+      const submitData = new FormData()
+      
+      // Add customer information
+      submitData.append('customerInfo.name', formData.customerInfo.name)
+      submitData.append('customerInfo.email', formData.customerInfo.email)
+      submitData.append('customerInfo.phone', formData.customerInfo.phone)
+      submitData.append('customerInfo.company', formData.customerInfo.company || '')
+      submitData.append('customerInfo.address', formData.customerInfo.address || '')
+      
+      // Add quote notes
+      submitData.append('quoteNotes', formData.customerInfo.message || '')
+      
+      // Add products data
+      submitData.append('products', JSON.stringify(formData.selectedProducts))
+      
+      // Add file uploads
+      formData.selectedProducts.forEach((product, productIndex) => {
+        product.images.forEach((file, fileIndex) => {
+          submitData.append('images', file)
+        })
+      })
+      
+      // Submit to API
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        body: submitData
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit quote')
+      }
       
       // Play success sound and trigger confetti
       playSuccessSound()
@@ -655,7 +687,7 @@ export default function QuoteForm() {
                           <div className="text-center">
                             <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                             <p className="text-sm text-gray-600">Click to upload or drag and drop</p>
-                            <p className="text-xs text-gray-500">PNG, JPG, SVG up to 10MB each</p>
+                            <p className="text-xs text-gray-500">JPG, PNG, SVG, PDF, AI, PSD, EPS up to 50MB each</p>
                           </div>
                         </label>
                       </div>

@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { CreditCard, User, MapPin, Phone, Mail, ShoppingCart, ArrowLeft } from 'lucide-react'
+import { CreditCard, User, ShoppingCart, ArrowLeft } from 'lucide-react'
 
 interface OrderItem {
   product_name: string
@@ -71,7 +70,6 @@ export default function CheckoutPage() {
   })
   const [loading, setLoading] = useState(false)
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
-  const [orderId, setOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     // Load order items from session storage or API
@@ -143,7 +141,6 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         const result = await response.json()
-        setOrderId(result.orderId)
         toast.success('Order created! Please complete payment.')
         
         // For COD (Cash on Delivery), redirect directly to thank you page

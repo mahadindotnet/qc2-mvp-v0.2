@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Test basic connection
     const { data: connectionTest, error: connectionError } = await supabaseAdmin
@@ -21,14 +21,12 @@ export async function GET(request: NextRequest) {
     
     // Test table structure
     let tableInfo = null
-    let tableError = null
     try {
       const result = await supabaseAdmin
         .rpc('get_table_info', { table_name: 'tshirt_orders' })
       tableInfo = result.data
-      tableError = result.error
-    } catch (err) {
-      tableError = { message: 'Table info not available' }
+    } catch {
+      // Table info not available
     }
     
     return NextResponse.json({

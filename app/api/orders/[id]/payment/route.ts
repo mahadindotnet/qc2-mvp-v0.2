@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { paymentId, status, paymentMethod, transactionId } = await request.json()
@@ -17,7 +17,7 @@ export async function POST(
         status: status === 'paid' ? 'processing' : 'pending',
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', (await params).id)
       .select()
       .single()
     
@@ -29,7 +29,7 @@ export async function POST(
       )
     }
     
-    console.log(`Payment updated for order ${params.id}:`, { paymentId, status, paymentMethod, transactionId })
+    console.log(`Payment updated for order ${(await params).id}:`, { paymentId, status, paymentMethod, transactionId })
     
     // TODO: Send confirmation email
     // TODO: Update inventory

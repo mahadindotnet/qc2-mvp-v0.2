@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Search, Filter, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Image, Archive, Edit3, Trash2, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw } from 'lucide-react'
+import { Search, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Archive, Edit3, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw } from 'lucide-react'
 import JSZip from 'jszip'
 import { toast } from 'sonner'
 import { Howl } from 'howler'
@@ -252,7 +251,7 @@ export default function AdminDashboard() {
       })
 
       // Generate the sound using Web Audio API but with Howler's better handling
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
 
@@ -264,7 +263,7 @@ export default function AdminDashboard() {
 
       // Create the sound pattern
       let currentTime = audioContext.currentTime
-      pattern.pattern.forEach((volume, index) => {
+      pattern.pattern.forEach((volume) => {
         gainNode.gain.setValueAtTime(0, currentTime)
         gainNode.gain.linearRampToValueAtTime(volume * pattern.volume, currentTime + 0.05)
         gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.1)
@@ -305,7 +304,7 @@ export default function AdminDashboard() {
         })
 
         // Generate the coin drop sound
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
         const oscillator = audioContext.createOscillator()
         const gainNode = audioContext.createGain()
         
@@ -342,7 +341,7 @@ export default function AdminDashboard() {
           })
 
           // Generate the cha-ching sound
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+          const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
           const oscillator = audioContext.createOscillator()
           const gainNode = audioContext.createGain()
           
@@ -446,7 +445,7 @@ export default function AdminDashboard() {
 
     try {
       const promises = Array.from(selectedOrders).map(async (orderId) => {
-        const updateData: any = {}
+        const updateData: Record<string, unknown> = {}
         
         if (bulkAction === 'status' && bulkStatus) {
           updateData.status = bulkStatus
@@ -858,7 +857,7 @@ export default function AdminDashboard() {
       // Add area instructions
       if (order.area_instructions.length > 0) {
         const instructionsFolder = zip.folder('instructions')
-        order.area_instructions.forEach((instruction, index) => {
+        order.area_instructions.forEach((instruction) => {
           instructionsFolder?.file(`${instruction.areaId}_instructions.txt`, instruction.instructions)
         })
       }
