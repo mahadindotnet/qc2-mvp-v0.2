@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
           const filePath = `quotes/${fileName}`
           
-          const { data: uploadData, error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('quote-attachments')
             .upload(filePath, file)
           

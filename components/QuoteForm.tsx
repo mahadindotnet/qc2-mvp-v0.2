@@ -392,8 +392,8 @@ export default function QuoteForm() {
       submitData.append('products', JSON.stringify(formData.selectedProducts))
       
       // Add file uploads
-      formData.selectedProducts.forEach((product, productIndex) => {
-        product.images.forEach((file, fileIndex) => {
+      formData.selectedProducts.forEach((product) => {
+        product.images.forEach((file) => {
           submitData.append('images', file)
         })
       })

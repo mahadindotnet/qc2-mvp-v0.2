@@ -1,20 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { 
   Search, 
-  Filter, 
   Download, 
   Eye, 
-  Edit, 
   Trash2, 
   CheckCircle, 
   XCircle, 
   Clock, 
   Mail,
-  Phone,
-  Calendar,
   FileText,
   DollarSign,
   Package,
@@ -91,7 +86,6 @@ export default function AdminQuotesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedQuotes, setSelectedQuotes] = useState<string[]>([])
-  const [showBulkActions, setShowBulkActions] = useState(false)
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
 

@@ -913,7 +913,7 @@ export default function TShirtDesigner() {
               </div>
               <div>
                 <p className="font-semibold text-gray-800 mb-2">🎯 Recommended Print Area</p>
-                <p className="text-gray-600">12" × 16" at 300 DPI (3600 × 4800 px)</p>
+                <p className="text-gray-600">12&apos;&apos; × 16&apos;&apos; at 300 DPI (3600 × 4800 px)</p>
               </div>
               <div>
                 <p className="font-semibold text-gray-800 mb-2">🔍 Resolution Requirements</p>
