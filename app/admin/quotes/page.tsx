@@ -199,7 +199,6 @@ export default function AdminQuotesPage() {
       }
       
       setSelectedQuotes([])
-      setShowBulkActions(false)
       toast.success(`Bulk action completed: ${action}`)
     } catch (error) {
       console.error('Error performing bulk action:', error)
