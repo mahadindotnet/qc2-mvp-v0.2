@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = supabaseAdmin
     const { id } = await params
     
     const { data: quote, error } = await supabase
@@ -43,7 +43,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = supabaseAdmin
     const { id } = await params
     const body = await request.json()
     
@@ -110,7 +110,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
+    const supabase = supabaseAdmin
     const { id } = await params
     
     // Check if quote exists

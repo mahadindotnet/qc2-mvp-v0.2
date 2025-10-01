@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 import { validateFileSecurity } from '@/lib/security'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = supabaseAdmin
     const formData = await request.formData()
     
     // Extract form data
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = supabaseAdmin
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const customerEmail = searchParams.get('customerEmail')
