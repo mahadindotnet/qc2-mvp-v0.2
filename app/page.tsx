@@ -260,7 +260,7 @@ export default function Home() {
 
        {/* Transparent Tab Content Area */}
        <div className="relative z-10 w-full">
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+         <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
            {/* Tab Content */}
            <div id="tab-content" className="min-h-[600px] sm:min-h-[800px] pt-0 p-0 pb-8 sm:pb-16">
              {activeTab === 'tshirts' && (
@@ -323,7 +323,7 @@ export default function Home() {
 
        {/* Footer */}
        <footer className="relative z-10 mt-16">
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+         <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-6">
            <div className="text-center">
              <p className="text-sm text-gray-500 font-bold">
                © 2025 QuickCopy2.com. All rights reserved.
