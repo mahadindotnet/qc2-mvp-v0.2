@@ -1397,9 +1397,151 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Mobile Orders Cards - Show on all screens */}
+        {/* Desktop Orders Table - Show on medium screens and up */}
         {activeTab === 'orders' && (
-          <div className="space-y-3 mt-4">
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden mt-4">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="flex items-center gap-2 hover:text-gray-700 cursor-pointer"
+                      >
+                        {isSelectAll ? (
+                          <CheckSquare className="h-4 w-4 text-orange-500" />
+                        ) : (
+                          <Square className="h-4 w-4 text-gray-400" />
+                        )}
+                        Select All
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Order
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.has(order.id) ? 'bg-orange-50' : ''}`}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.has(order.id)}
+                          onChange={() => toggleOrderSelection(order.id)}
+                          className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            #{order.id.slice(0, 8)}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(order.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {order.customer_name || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {order.customer_email || 'N/A'}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {order.product_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.product_name === 'Color Copies' 
+                            ? `${order.print_type_label || order.print_type} • ${order.quantity} qty`
+                            : `${order.shirt_size} • ${order.quantity} qty`
+                          }
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(order.payment_status)}`}>
+                          {order.payment_status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${order.total_price.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={() => viewOrderDetails(order)}
+                            className="text-orange-600 hover:text-orange-900 cursor-pointer"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => downloadOrderPackage(order)}
+                            className="text-purple-600 hover:text-purple-900 cursor-pointer"
+                            title="Download Order Package"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                          {order.status === 'pending' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'processing')}
+                              className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                              title="Mark as Processing"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                          {order.status === 'processing' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'completed')}
+                              className="text-green-600 hover:text-green-900 cursor-pointer"
+                              title="Mark as Completed"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Orders Cards - Show on small screens */}
+        {activeTab === 'orders' && (
+          <div className="md:hidden space-y-3 mt-4">
             {filteredOrders.map((order) => (
               <div key={`mobile-${order.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <div className="flex items-start justify-between mb-3">
