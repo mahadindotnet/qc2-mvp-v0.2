@@ -79,13 +79,62 @@ export default function Home() {
           >
             <p className="mb-4">
               Our new store is coming soon! In the meantime, place custom T-shirt orders, request a quote for other products, or{' '}
-              <a 
+              <motion.a 
                 href="tel:+16514881244"
                 className="inline-flex items-center gap-1 px-2 py-1 mx-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-medium transition-all duration-300 hover:scale-105 cursor-pointer shadow-sm hover:shadow-md text-sm"
+                initial={{ 
+                  opacity: 0, 
+                  scale: 0.8,
+                  rotateX: -15,
+                  y: 10
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1,
+                  rotateX: 0,
+                  y: 0
+                }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: 1.2,
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 12
+                }}
+                whileHover={{ 
+                  scale: 1.1,
+                  y: -2,
+                  rotateX: 5,
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{ 
+                  scale: 0.95,
+                  transition: { duration: 0.1 }
+                }}
               >
-                <Phone className="h-3 w-3" />
-                give us a call
-              </a>
+                <motion.div
+                  initial={{ rotate: -180, scale: 0 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: 1.4,
+                    type: "spring",
+                    stiffness: 200
+                  }}
+                >
+                  <Phone className="h-3 w-3" />
+                </motion.div>
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay: 1.6
+                  }}
+                >
+                  give us a call
+                </motion.span>
+              </motion.a>
               {' '}— we&apos;re here to make it easy for you.
             </p>
           </motion.div>
