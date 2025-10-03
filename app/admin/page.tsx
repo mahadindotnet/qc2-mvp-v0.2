@@ -835,6 +835,55 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url)
   }
 
+  // Download order files (images and attachments)
+  const downloadOrderFiles = async (order: Order) => {
+    try {
+      const zip = new JSZip()
+      
+      // Add images from image_elements
+      if (order.image_elements && Array.isArray(order.image_elements)) {
+        order.image_elements.forEach((img: any, index: number) => {
+          if (img.imageUrl && img.imageUrl.startsWith('data:')) {
+            const base64Data = img.imageUrl.split(',')[1]
+            const fileName = `image_${index + 1}_${img.area || 'unknown'}.png`
+            zip.file(fileName, base64Data, { base64: true })
+          }
+        })
+      }
+      
+      // Add front side files for Color Copies orders
+      if (order.product_name === 'Color Copies' && (order as any).front_side_files) {
+        const frontFiles = (order as any).front_side_files
+        if (Array.isArray(frontFiles)) {
+          frontFiles.forEach((file: any, index: number) => {
+            if (file.data && file.data.startsWith('data:')) {
+              const base64Data = file.data.split(',')[1]
+              const fileName = `front_file_${index + 1}_${file.name || 'file'}`
+              zip.file(fileName, base64Data, { base64: true })
+            }
+          })
+        }
+      }
+      
+      // Generate and download ZIP
+      const content = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(content)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `order_${order.id.slice(0, 8)}_files.zip`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      toast.success('Files downloaded successfully!')
+    } catch (error) {
+      console.error('Error downloading files:', error)
+      toast.error('Failed to download files')
+    }
+  }
+
   // Download complete order package (images + text)
   const downloadOrderPackage = async (order: Order) => {
     try {
