@@ -36,7 +36,7 @@ export default function Home() {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 min-h-[50vh] sm:min-h-screen flex items-center justify-center pt-8 sm:pt-0">
+      <div className="relative z-10 min-h-[50vh] sm:min-h-screen flex items-center justify-center pt-12 sm:pt-0">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <motion.div
