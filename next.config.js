@@ -4,7 +4,7 @@ const nextConfig = {
   reactStrictMode: true,
   // This helps with hydration mismatches from browser extensions
   experimental: {
-    suppressHydrationWarning: true,
+    // suppressHydrationWarning: true, // This option is deprecated
   },
 }
 

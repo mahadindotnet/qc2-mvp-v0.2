@@ -55,86 +55,188 @@ interface OrderData {
 
 export async function POST(request: NextRequest) {
   try {
-    const orderData: OrderData = await request.json()
+    const orderData: any = await request.json()
+    console.log('Received order data:', JSON.stringify(orderData, null, 2))
     
-    // Calculate pricing
-    const selectedAreas = orderData.print_areas.filter(area => area.selected)
-    const basePrice = selectedAreas.reduce((total, area) => total + area.price, 0) * orderData.quantity
-    const turnaroundPrice = orderData.turnaround_time.price
-    const totalPrice = basePrice + turnaroundPrice
+    // Determine if this is a Color Copies order
+    const isColorCopies = orderData.product_name === 'Color Copies'
+    console.log('Is Color Copies order:', isColorCopies)
     
-    // Prepare data for database
-    const orderRecord = {
-      // Product Information
-      product_name: orderData.product_name,
+    if (isColorCopies) {
+      // Handle Color Copies order
+      const colorCopiesData = orderData.color_copies_data
+      console.log('Color Copies data:', JSON.stringify(colorCopiesData, null, 2))
       
-      // Design Details
-      shirt_color: orderData.shirt_color,
-      shirt_size: orderData.shirt_size,
-      print_type: orderData.print_type,
-      quantity: orderData.quantity,
+      if (!colorCopiesData) {
+        throw new Error('Color Copies data is missing')
+      }
       
-      // Print Areas (store as JSONB)
-      print_areas: orderData.print_areas,
+      // Calculate pricing for Color Copies
+      const basePrice = colorCopiesData.printTypePrice * orderData.quantity
+      const turnaroundPrice = colorCopiesData.turnaroundTimePrice * orderData.quantity
+      const totalPrice = basePrice + turnaroundPrice
       
-      // Design Elements
-      text_elements: orderData.textElements,
-      image_elements: orderData.imageElements,
-      area_instructions: orderData.areaInstructions,
+      console.log('Color Copies pricing:', { basePrice, turnaroundPrice, totalPrice })
       
-      // Pricing
-      base_price: basePrice,
-      turnaround_price: turnaroundPrice,
-      total_price: totalPrice,
+      // Prepare Color Copies order record
+      const orderRecord = {
+        // Product Information
+        product_name: 'Color Copies',
+        
+        // Print Configuration
+        print_type: colorCopiesData.printType,
+        print_type_label: colorCopiesData.printTypeLabel,
+        print_type_price: colorCopiesData.printTypePrice,
+        quantity: orderData.quantity,
+        
+        // File Uploads
+        front_side_files: colorCopiesData.frontSideFiles,
+        
+        // Design Instructions
+        front_side_instructions: colorCopiesData.frontSideInstructions,
+        
+        // Turnaround Time
+        turnaround_time: colorCopiesData.turnaroundTime,
+        turnaround_time_label: colorCopiesData.turnaroundTimeLabel,
+        turnaround_time_price: colorCopiesData.turnaroundTimePrice,
+        
+        // Design Proof
+        design_proof_required: colorCopiesData.designProof === 'Yes, send design proof before printing',
+        design_proof: colorCopiesData.designProof,
+        proof_contact_method: colorCopiesData.proofContactMethod,
+        proof_contact_details: colorCopiesData.contactDetails,
+        
+        // Pricing
+        base_price: basePrice,
+        turnaround_price: turnaroundPrice,
+        total_price: totalPrice,
+        
+        // Customer Information
+        customer_name: `${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`,
+        customer_email: orderData.customerDetails.email,
+        customer_phone: orderData.customerDetails.phone,
+        customer_address: `${orderData.customerDetails.address}, ${orderData.customerDetails.city}, ${orderData.customerDetails.state} ${orderData.customerDetails.zipCode}, ${orderData.customerDetails.country}`,
+        
+        // Order Status
+        status: orderData.status,
+        payment_status: orderData.paymentStatus,
+        
+        // Additional Notes
+        notes: `Color Copies order placed via checkout system. Customer: ${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`
+      }
       
-      // Turnaround Time
-      turnaround_time: orderData.turnaround_time,
+      // Insert into color_copies_orders table
+      console.log('Inserting Color Copies order record:', JSON.stringify(orderRecord, null, 2))
       
-      // Design Proof
-      design_proof_required: orderData.design_proof_required,
-      proof_contact_details: orderData.proof_contact_details,
+      const { data, error } = await supabaseAdmin
+        .from('color_copies_orders')
+        .insert([orderRecord])
+        .select()
+        .single()
       
-      // Customer Information
-      customer_name: `${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`,
-      customer_email: orderData.customerDetails.email,
-      customer_phone: orderData.customerDetails.phone,
-      customer_address: `${orderData.customerDetails.address}, ${orderData.customerDetails.city}, ${orderData.customerDetails.state} ${orderData.customerDetails.zipCode}, ${orderData.customerDetails.country}`,
+      if (error) {
+        console.error('Color Copies database error:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        
+        // Check if the table doesn't exist
+        if (error.message && error.message.includes('relation "color_copies_orders" does not exist')) {
+          return NextResponse.json(
+            { success: false, message: 'Color Copies table not found. Please run the database schema setup first.', error: error.message },
+            { status: 500 }
+          )
+        }
+        
+        return NextResponse.json(
+          { success: false, message: 'Error saving Color Copies order to database', error: error.message },
+          { status: 500 }
+        )
+      }
       
-      // Order Status
-      status: orderData.status,
-      payment_status: orderData.paymentStatus,
+      console.log('Color Copies order created successfully:', data.id)
       
-      // Additional Notes
-      notes: `Order placed via checkout system. Customer: ${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Color Copies order created successfully',
+        orderId: data.id,
+        totalPrice: totalPrice
+      })
+      
+    } else {
+      // Handle T-shirt order (existing logic)
+      const selectedAreas = orderData.print_areas.filter((area: any) => area.selected)
+      const basePrice = selectedAreas.reduce((total: number, area: any) => total + area.price, 0) * orderData.quantity
+      const turnaroundPrice = orderData.turnaround_time.price
+      const totalPrice = basePrice + turnaroundPrice
+      
+      // Prepare data for database
+      const orderRecord = {
+        // Product Information
+        product_name: orderData.product_name,
+        
+        // Design Details
+        shirt_color: orderData.shirt_color,
+        shirt_size: orderData.shirt_size,
+        print_type: orderData.print_type,
+        quantity: orderData.quantity,
+        
+        // Print Areas (store as JSONB)
+        print_areas: orderData.print_areas,
+        
+        // Design Elements
+        text_elements: orderData.textElements,
+        image_elements: orderData.imageElements,
+        area_instructions: orderData.areaInstructions,
+        
+        // Pricing
+        base_price: basePrice,
+        turnaround_price: turnaroundPrice,
+        total_price: totalPrice,
+        
+        // Turnaround Time
+        turnaround_time: orderData.turnaround_time,
+        
+        // Design Proof
+        design_proof_required: orderData.design_proof_required,
+        proof_contact_details: orderData.proof_contact_details,
+        
+        // Customer Information
+        customer_name: `${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`,
+        customer_email: orderData.customerDetails.email,
+        customer_phone: orderData.customerDetails.phone,
+        customer_address: `${orderData.customerDetails.address}, ${orderData.customerDetails.city}, ${orderData.customerDetails.state} ${orderData.customerDetails.zipCode}, ${orderData.customerDetails.country}`,
+        
+        // Order Status
+        status: orderData.status,
+        payment_status: orderData.paymentStatus,
+        
+        // Additional Notes
+        notes: `Order placed via checkout system. Customer: ${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`
+      }
+      
+      // Insert into tshirt_orders table
+      const { data, error } = await supabaseAdmin
+        .from('tshirt_orders')
+        .insert([orderRecord])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Database error:', error)
+        return NextResponse.json(
+          { success: false, message: 'Error saving order to database', error: error.message },
+          { status: 500 }
+        )
+      }
+      
+      console.log('T-shirt order created successfully:', data.id)
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'T-shirt order created successfully',
+        orderId: data.id,
+        totalPrice: totalPrice
+      })
     }
-    
-    // Insert into database
-    const { data, error } = await supabaseAdmin
-      .from('tshirt_orders')
-      .insert([orderRecord])
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { success: false, message: 'Error saving order to database', error: error.message },
-        { status: 500 }
-      )
-    }
-    
-    console.log('Order created successfully:', data.id)
-    
-    // TODO: Send confirmation email
-    // TODO: Process payment (PayPal integration)
-    // TODO: Update inventory if needed
-    
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Order created successfully',
-      orderId: data.id,
-      totalPrice: totalPrice
-    })
     
   } catch (error) {
     console.error('Error processing checkout:', error)

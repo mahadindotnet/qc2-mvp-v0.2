@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Archive, Edit3, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw } from 'lucide-react'
+import { Search, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Archive, Edit3, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw, MessageSquare, Users } from 'lucide-react'
 import JSZip from 'jszip'
 import { toast } from 'sonner'
 import { Howl } from 'howler'
@@ -20,9 +20,11 @@ interface Order {
   base_price: number
   turnaround_price: number
   product_name: string
-  shirt_color: string
-  shirt_size: string
+  shirt_color?: string
+  shirt_size?: string
   print_type: string
+  print_type_label?: string
+  print_type_price?: number
   quantity: number
   print_areas: Array<{
     id: string
@@ -37,34 +39,81 @@ interface Order {
   design_proof_required: boolean
   proof_contact_method?: string
   proof_contact_details?: string
-  text_elements: Array<{
+  text_elements?: Array<{
     id: string
     text: string
     area: string
   }>
-  image_elements: Array<{
+  image_elements?: Array<{
     id: string
     imageUrl: string
     area: string
     fileName?: string
   }>
-  area_instructions: Array<{
+  area_instructions?: Array<{
     areaId: string
     instructions: string
   }>
+  front_side_files?: Array<{
+    name: string
+    size: number
+    type: string
+    data?: string
+  }>
+  front_side_instructions?: string
   notes?: string
   estimated_completion?: string
   completed_at?: string
 }
 
+interface Quote {
+  id: string
+  created_at: string
+  quote_reference: string
+  customer_name: string
+  customer_email: string
+  customer_phone: string
+  customer_address: string
+  customer_company?: string
+  quote_notes?: string
+  internal_notes?: string
+  quote_status: string
+  quote_expiry_date: string
+  total_estimated_price: number
+  quote_products: Array<{
+    id: string
+    product_name: string
+    product_category: string
+    quantity: number
+    size?: string
+    color?: string
+    print_type?: string
+    unit_price: number
+    total_price: number
+  }>
+  quote_attachments: Array<{
+    id: string
+    file_name: string
+    file_type: string
+    file_size: number
+    file_url: string
+    attachment_type: string
+  }>
+}
+
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [paymentFilter, setPaymentFilter] = useState('all')
+  const [quoteStatusFilter, setQuoteStatusFilter] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
+  const [showQuoteModal, setShowQuoteModal] = useState(false)
+  const [activeTab, setActiveTab] = useState<'orders' | 'quotes'>('orders')
   
   // Bulk selection and editing
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set())
@@ -85,11 +134,13 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchOrders()
+    fetchQuotes()
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       if (autoRefresh) {
         checkForUpdates()
+        fetchQuotes()
       }
     }, 30000)
     
@@ -390,6 +441,19 @@ export default function AdminDashboard() {
     }
   }
 
+  const fetchQuotes = async () => {
+    try {
+      const response = await fetch('/api/quotes')
+      const data = await response.json()
+      
+      if (data.quotes) {
+        setQuotes(data.quotes)
+      }
+    } catch (error) {
+      console.error('Error fetching quotes:', error)
+    }
+  }
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/orders/${orderId}`, {
@@ -519,34 +583,39 @@ export default function AdminDashboard() {
         'Proof Contact Details',
         'Text Elements',
         'Image Elements Count',
+        'Color Copies Files',
         'Area Instructions'
       ]
 
       // Convert orders to CSV rows
       const csvRows = selectedOrdersData.map(order => {
         const printAreas = order.print_areas
-          .filter(area => area.selected)
-          .map(area => area.name)
+          ?.filter(area => area.selected)
+          ?.map(area => area.name) || (order.product_name === 'Color Copies' ? [order.print_type_label || order.print_type] : [])
           .join('; ')
         
         const textElements = order.text_elements
-          .map(el => `${el.area}: ${el.text}`)
-          .join('; ')
+          ?.map(el => `${el.area}: ${el.text}`)
+          ?.join('; ') || ''
         
         const areaInstructions = order.area_instructions
-          .map(inst => `${inst.areaId}: ${inst.instructions}`)
-          .join('; ')
+          ?.map(inst => `${inst.areaId}: ${inst.instructions}`)
+          ?.join('; ') || ''
+
+        const colorCopiesFiles = order.product_name === 'Color Copies' && order.front_side_files
+          ? order.front_side_files.map(file => `${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`)
+          : []
 
         return [
           order.id,
           new Date(order.created_at).toLocaleDateString(),
-          `"${order.customer_name}"`,
-          order.customer_email,
-          order.customer_phone,
+          `"${order.customer_name || 'N/A'}"`,
+          order.customer_email || 'N/A',
+          order.customer_phone || 'N/A',
           `"${order.customer_address}"`,
           order.product_name,
-          order.shirt_color,
-          order.shirt_size,
+          order.product_name === 'Color Copies' ? order.print_type_label || order.print_type : order.shirt_color,
+          order.product_name === 'Color Copies' ? order.print_type : order.shirt_size,
           order.print_type,
           order.quantity,
           `"${printAreas}"`,
@@ -559,7 +628,8 @@ export default function AdminDashboard() {
           order.proof_contact_method || '',
           order.proof_contact_details || '',
           `"${textElements}"`,
-          order.image_elements.length,
+          order.image_elements?.length || 0,
+          `"${colorCopiesFiles.join('; ')}"`,
           `"${areaInstructions}"`
         ].join(',')
       })
@@ -619,34 +689,39 @@ export default function AdminDashboard() {
         'Proof Contact Details',
         'Text Elements',
         'Image Elements Count',
+        'Color Copies Files',
         'Area Instructions'
       ]
 
       // Convert all orders to CSV rows
       const csvRows = orders.map(order => {
         const printAreas = order.print_areas
-          .filter(area => area.selected)
-          .map(area => area.name)
+          ?.filter(area => area.selected)
+          ?.map(area => area.name) || (order.product_name === 'Color Copies' ? [order.print_type_label || order.print_type] : [])
           .join('; ')
         
         const textElements = order.text_elements
-          .map(el => `${el.area}: ${el.text}`)
-          .join('; ')
+          ?.map(el => `${el.area}: ${el.text}`)
+          ?.join('; ') || ''
         
         const areaInstructions = order.area_instructions
-          .map(inst => `${inst.areaId}: ${inst.instructions}`)
-          .join('; ')
+          ?.map(inst => `${inst.areaId}: ${inst.instructions}`)
+          ?.join('; ') || ''
+
+        const colorCopiesFiles = order.product_name === 'Color Copies' && order.front_side_files
+          ? order.front_side_files.map(file => `${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`)
+          : []
 
         return [
           order.id,
           new Date(order.created_at).toLocaleDateString(),
-          `"${order.customer_name}"`,
-          order.customer_email,
-          order.customer_phone,
+          `"${order.customer_name || 'N/A'}"`,
+          order.customer_email || 'N/A',
+          order.customer_phone || 'N/A',
           `"${order.customer_address}"`,
           order.product_name,
-          order.shirt_color,
-          order.shirt_size,
+          order.product_name === 'Color Copies' ? order.print_type_label || order.print_type : order.shirt_color,
+          order.product_name === 'Color Copies' ? order.print_type : order.shirt_size,
           order.print_type,
           order.quantity,
           `"${printAreas}"`,
@@ -659,7 +734,8 @@ export default function AdminDashboard() {
           order.proof_contact_method || '',
           order.proof_contact_details || '',
           `"${textElements}"`,
-          order.image_elements.length,
+          order.image_elements?.length || 0,
+          `"${colorCopiesFiles.join('; ')}"`,
           `"${areaInstructions}"`
         ].join(',')
       })
@@ -714,7 +790,7 @@ export default function AdminDashboard() {
       const imagesFolder = zip.folder('images')
       
       // Add each image to the ZIP
-      for (const element of order.image_elements) {
+      for (const element of order.image_elements || []) {
         try {
           // Convert base64 to blob
           const response = await fetch(element.imageUrl)
@@ -748,20 +824,20 @@ export default function AdminDashboard() {
   const downloadOrderText = (order: Order) => {
     const textData = {
       orderId: order.id,
-      customerName: order.customer_name,
+      customerName: order.customer_name || 'N/A',
       customerEmail: order.customer_email,
       customerPhone: order.customer_phone,
       customerAddress: order.customer_address,
       productDetails: {
         productName: order.product_name,
-        shirtColor: order.shirt_color,
-        shirtSize: order.shirt_size,
+        shirtColor: order.product_name === 'Color Copies' ? order.print_type_label || order.print_type : order.shirt_color,
+        shirtSize: order.product_name === 'Color Copies' ? order.print_type : order.shirt_size,
         printType: order.print_type,
         quantity: order.quantity
       },
-      printAreas: order.print_areas.filter(area => area.selected),
-      textElements: order.text_elements,
-      areaInstructions: order.area_instructions,
+      printAreas: order.print_areas?.filter(area => area.selected) || (order.product_name === 'Color Copies' ? [{ id: 'front', name: order.print_type_label || order.print_type, price: order.print_type_price || 0, selected: true }] : []),
+      textElements: order.text_elements || [],
+      areaInstructions: order.area_instructions || [],
       designProof: {
         required: order.design_proof_required,
         contactMethod: order.proof_contact_method,
@@ -799,7 +875,7 @@ export default function AdminDashboard() {
       // Add order details JSON
       const textData = {
         orderId: order.id,
-        customerName: order.customer_name,
+        customerName: order.customer_name || 'N/A',
         customerEmail: order.customer_email,
         customerPhone: order.customer_phone,
         customerAddress: order.customer_address,
@@ -810,9 +886,9 @@ export default function AdminDashboard() {
           printType: order.print_type,
           quantity: order.quantity
         },
-        printAreas: order.print_areas.filter(area => area.selected),
-        textElements: order.text_elements,
-        areaInstructions: order.area_instructions,
+        printAreas: order.print_areas?.filter(area => area.selected) || (order.product_name === 'Color Copies' ? [{ id: 'front', name: order.print_type_label || order.print_type, price: order.print_type_price || 0, selected: true }] : []),
+        textElements: order.text_elements || [],
+        areaInstructions: order.area_instructions || [],
         designProof: {
           required: order.design_proof_required,
           contactMethod: order.proof_contact_method,
@@ -835,7 +911,7 @@ export default function AdminDashboard() {
       const imagesFolder = zip.folder('images')
       
       // Add each image to the ZIP
-      for (const element of order.image_elements) {
+      for (const element of order.image_elements || []) {
         try {
           const response = await fetch(element.imageUrl)
           const blob = await response.blob()
@@ -847,17 +923,17 @@ export default function AdminDashboard() {
       }
       
       // Add text elements as separate files
-      if (order.text_elements.length > 0) {
+      if ((order.text_elements?.length || 0) > 0) {
         const textFolder = zip.folder('text_elements')
-        order.text_elements.forEach((element, index) => {
+        order.text_elements?.forEach((element, index) => {
           textFolder?.file(`${element.area}_text_${index + 1}.txt`, element.text)
         })
       }
       
       // Add area instructions
-      if (order.area_instructions.length > 0) {
+      if ((order.area_instructions?.length || 0) > 0) {
         const instructionsFolder = zip.folder('instructions')
-        order.area_instructions.forEach((instruction) => {
+        order.area_instructions?.forEach((instruction) => {
           instructionsFolder?.file(`${instruction.areaId}_instructions.txt`, instruction.instructions)
         })
       }
@@ -879,14 +955,29 @@ export default function AdminDashboard() {
   }
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.id.toLowerCase().includes(searchTerm.toLowerCase())
+    // Safe search with null checks
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = (order.customer_name?.toLowerCase()?.includes(searchLower) || false) ||
+                         (order.customer_email?.toLowerCase()?.includes(searchLower) || false) ||
+                         (order.id?.toLowerCase()?.includes(searchLower) || false)
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter
     const matchesPayment = paymentFilter === 'all' || order.payment_status === paymentFilter
     
     return matchesSearch && matchesStatus && matchesPayment
+  })
+
+  const filteredQuotes = quotes.filter(quote => {
+    // Safe search with null checks
+    const searchLower = searchTerm.toLowerCase()
+    const matchesSearch = (quote.customer_name?.toLowerCase()?.includes(searchLower) || false) ||
+                         (quote.customer_email?.toLowerCase()?.includes(searchLower) || false) ||
+                         (quote.quote_reference?.toLowerCase()?.includes(searchLower) || false) ||
+                         (quote.id?.toLowerCase()?.includes(searchLower) || false)
+    
+    const matchesStatus = quoteStatusFilter === 'all' || quote.quote_status === quoteStatusFilter
+    
+    return matchesSearch && matchesStatus
   })
 
   const getStatusColor = (status: string) => {
@@ -909,6 +1000,55 @@ export default function AdminDashboard() {
     }
   }
 
+  const getQuoteStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'sent': return 'bg-blue-100 text-blue-800'
+      case 'accepted': return 'bg-green-100 text-green-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      case 'expired': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const generateQuotesCSV = (quotes: Quote[]) => {
+    const headers = [
+      'Quote ID',
+      'Quote Reference',
+      'Created Date',
+      'Customer Name',
+      'Customer Email',
+      'Customer Phone',
+      'Customer Company',
+      'Quote Status',
+      'Total Price',
+      'Quote Notes',
+      'Internal Notes',
+      'Expiry Date',
+      'Products Count',
+      'Attachments Count'
+    ]
+
+    const csvRows = quotes.map(quote => [
+      quote.id,
+      quote.quote_reference,
+      new Date(quote.created_at).toLocaleDateString(),
+      `"${quote.customer_name || 'N/A'}"`,
+      quote.customer_email || 'N/A',
+      quote.customer_phone || 'N/A',
+      `"${quote.customer_company || 'N/A'}"`,
+      quote.quote_status,
+      quote.total_estimated_price || 0,
+      `"${quote.quote_notes || ''}"`,
+      `"${quote.internal_notes || ''}"`,
+      new Date(quote.quote_expiry_date).toLocaleDateString(),
+      quote.quote_products?.length || 0,
+      quote.quote_attachments?.length || 0
+    ])
+
+    return [headers, ...csvRows].map(row => row.join(',')).join('\n')
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -918,250 +1058,234 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
-              <p className="text-gray-600 mt-2">Manage and track customer orders</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Last updated: {lastUpdate.toLocaleTimeString()}
-                {autoRefresh && (
-                  <span className="ml-2 text-green-600 font-medium">
-                    • Auto-refresh active (notifications debounced)
-                  </span>
-                )}
-              </p>
+              <h1 className="text-lg font-bold text-gray-900">QuickCopy Admin</h1>
+              <p className="text-xs text-gray-500">Order Management</p>
             </div>
             
-            <div className="flex items-center gap-4">
-              {/* Sound toggle */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setSoundEnabled(!soundEnabled)
-                    if (!soundEnabled) {
-                      playNotificationSound('money') // Test with coin money sound! 💰
-                    }
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    soundEnabled 
-                      ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <Bell className="h-4 w-4" />
-                  {soundEnabled ? 'Sound ON' : 'Sound OFF'}
-                </button>
-              </div>
-
-              {/* Auto-refresh toggle */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setAutoRefresh(!autoRefresh)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    autoRefresh 
-                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-                  Auto-refresh
-                </button>
-              </div>
+            {/* Mobile Controls */}
+            <div className="flex items-center gap-2">
+              {/* Sound Toggle */}
+              <button
+                onClick={() => {
+                  setSoundEnabled(!soundEnabled)
+                  if (!soundEnabled) {
+                    playNotificationSound('money')
+                  }
+                }}
+                className={`p-2 rounded-lg ${soundEnabled ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <Bell className="h-4 w-4" />
+              </button>
               
-              {/* Manual refresh - only show when auto-refresh is disabled */}
+              {/* Auto-refresh Toggle */}
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`p-2 rounded-lg ${autoRefresh ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+              </button>
+              
+              {/* Manual Refresh */}
               {!autoRefresh && (
                 <button
-                onClick={() => {
-                  fetchOrders()
-                  setLastUpdate(new Date())
-                  setLastNotificationTime(new Date()) // Reset notification debounce
-                  playNotificationSound('success')
-                  toast.success('Orders refreshed!', {
-                    duration: 2000,
-                  })
-                }}
-                  className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm font-medium"
+                  onClick={() => {
+                    fetchOrders()
+                    fetchQuotes()
+                    setLastUpdate(new Date())
+                    playNotificationSound('success')
+                    toast.success('Refreshed!')
+                  }}
+                  className="p-2 bg-orange-100 text-orange-600 rounded-lg"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Refresh Now
                 </button>
-              )}
-              
-              {/* Notification indicators */}
-              {(newOrdersCount > 0 || statusUpdatesCount > 0) && (
-                <div className="flex items-center gap-2">
-                  {newOrdersCount > 0 && (
-                    <button
-                      onClick={clearNotifications}
-                      className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium hover:bg-green-200 transition-colors cursor-pointer"
-                    >
-                      <Bell className="h-3 w-3" />
-                      {newOrdersCount} new
-                    </button>
-                  )}
-                  {statusUpdatesCount > 0 && (
-                    <button
-                      onClick={clearNotifications}
-                      className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium hover:bg-blue-200 transition-colors cursor-pointer"
-                    >
-                      <Bell className="h-3 w-3" />
-                      {statusUpdatesCount} updated
-                    </button>
-                  )}
-                </div>
               )}
             </div>
           </div>
+          
+          {/* Notification Badges */}
+          {(newOrdersCount > 0 || statusUpdatesCount > 0) && (
+            <div className="flex gap-2 mt-2">
+              {newOrdersCount > 0 && (
+                <button
+                  onClick={clearNotifications}
+                  className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+                >
+                  <Bell className="h-3 w-3" />
+                  {newOrdersCount} new orders
+                </button>
+              )}
+              {statusUpdatesCount > 0 && (
+                <button
+                  onClick={clearNotifications}
+                  className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
+                >
+                  <Bell className="h-3 w-3" />
+                  {statusUpdatesCount} updates
+                </button>
+              )}
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+      <div className="px-4 py-4">
+        {/* Mobile Stats Cards */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-white rounded-lg p-3 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="h-6 w-6 text-blue-600" />
+                <Package className="h-5 w-5 text-blue-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Orders</p>
+                <p className="text-lg font-bold text-gray-900">{orders.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg p-3 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="h-6 w-6 text-yellow-600" />
+                <Clock className="h-5 w-5 text-yellow-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Pending</p>
+                <p className="text-lg font-bold text-gray-900">
                   {orders.filter(o => o.status === 'pending').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Processing</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {orders.filter(o => o.status === 'processing').length}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-lg p-3 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Completed</p>
+                <p className="text-lg font-bold text-gray-900">
                   {orders.filter(o => o.status === 'completed').length}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Total Revenue */}
-          <div className="bg-white rounded-lg shadow p-6">
+          
+          <div className="bg-white rounded-lg p-3 shadow-sm">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-orange-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${earnings.total.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Completed Revenue */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-emerald-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed Revenue</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  ${earnings.completed.toFixed(2)}
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Revenue</p>
+                <p className="text-lg font-bold text-gray-900">
+                  ${earnings.total.toFixed(0)}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Filters and Bulk Actions */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search orders, customers, emails..."
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+
+        {/* Mobile Tab Navigation */}
+        <div className="mb-4">
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-l-lg ${
+                  activeTab === 'orders'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-50 text-gray-600'
+                }`}
               >
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Payment</label>
-              <select
-                value={paymentFilter}
-                onChange={(e) => setPaymentFilter(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                <div className="flex items-center justify-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Orders ({orders.length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('quotes')}
+                className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-r-lg ${
+                  activeTab === 'quotes'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-50 text-gray-600'
+                }`}
               >
-                <option value="all">All Payments</option>
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-                <option value="failed">Failed</option>
-                <option value="refunded">Refunded</option>
-              </select>
-            </div>
-            
-            <div className="flex items-end">
-                <button 
-                  onClick={exportAllOrders}
-                  className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Download className="h-4 w-4" />
-                  Export All
-                </button>
+                <div className="flex items-center justify-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Quotes ({quotes.length})
+                </div>
+              </button>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Filters */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search orders..."
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment</label>
+                  <select
+                    value={paymentFilter}
+                    onChange={(e) => setPaymentFilter(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  >
+                    <option value="all">All Payments</option>
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                </div>
+              </div>
+              
+              <button 
+                onClick={exportAllOrders}
+                className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Download className="h-4 w-4" />
+                Export All Orders
+              </button>
+            </div>
 
           {/* Bulk Actions */}
           {selectedOrders.size > 0 && (
@@ -1199,15 +1323,71 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        )}
 
-        {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Mobile Quotes Filters */}
+        {activeTab === 'quotes' && (
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search quotes..."
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={quoteStatusFilter}
+                  onChange={(e) => setQuoteStatusFilter(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="sent">Sent</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+              
+              <button 
+                onClick={() => {
+                  const csvContent = generateQuotesCSV(filteredQuotes)
+                  const blob = new Blob([csvContent], { type: 'text/csv' })
+                  const url = window.URL.createObjectURL(blob)
+                  const link = document.createElement('a')
+                  link.href = url
+                  link.download = `quotes-${new Date().toISOString().split('T')[0]}.csv`
+                  link.click()
+                  window.URL.revokeObjectURL(url)
+                }}
+                className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Download className="h-4 w-4" />
+                Export Quotes
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Orders Table */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 hidden md:table-header-group">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       onClick={toggleSelectAll}
                       className="flex items-center gap-2 hover:text-gray-700 cursor-pointer"
@@ -1245,8 +1425,8 @@ export default function AdminDashboard() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredOrders.map((order) => (
-                  <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.has(order.id) ? 'bg-orange-50' : ''}`}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.has(order.id) ? 'bg-orange-50' : ''} block md:table-row`}>
+                    <td className="px-3 md:px-6 py-4 whitespace-nowrap">
                       <input
                         type="checkbox"
                         checked={selectedOrders.has(order.id)}
@@ -1267,10 +1447,10 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {order.customer_name}
+                          {order.customer_name || 'N/A'}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {order.customer_email}
+                          {order.customer_email || 'N/A'}
                         </div>
                       </div>
                     </td>
@@ -1279,7 +1459,10 @@ export default function AdminDashboard() {
                         {order.product_name}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {order.shirt_size} • {order.quantity} qty
+                        {order.product_name === 'Color Copies' 
+                          ? `${order.print_type_label || order.print_type} • ${order.quantity} qty`
+                          : `${order.shirt_size} • ${order.quantity} qty`
+                        }
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -1337,12 +1520,150 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
-      </div>
+        )}
 
-      {/* Order Details Modal */}
+        {/* Mobile Orders Cards - Show on small screens */}
+        {activeTab === 'orders' && (
+          <div className="md:hidden space-y-3 mt-4">
+            {filteredOrders.map((order) => (
+              <div key={`mobile-${order.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedOrders.has(order.id)}
+                      onChange={() => toggleOrderSelection(order.id)}
+                      className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        #{order.id.substring(0, 8)}...
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900">
+                      ${order.total_price?.toFixed(2) || '0.00'}
+                    </div>
+                    <div className="flex gap-1 mt-1">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </span>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(order.payment_status)}`}>
+                        {order.payment_status}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 mb-3">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{order.customer_name}</div>
+                    <div className="text-xs text-gray-500">{order.customer_email}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-gray-900">{order.product_name}</div>
+                    {order.product_name === 'Custom T-Shirt' && (
+                      <div className="text-xs text-gray-500">
+                        {order.shirt_size} • {order.shirt_color}
+                      </div>
+                    )}
+                    {order.product_name === 'Color Copies' && (
+                      <div className="text-xs text-gray-500">
+                        {order.print_type_label}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(order)
+                      setShowOrderModal(true)
+                    }}
+                    className="flex-1 bg-orange-100 text-orange-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => downloadOrderFiles(order)}
+                    className="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile Quotes Cards */}
+        {activeTab === 'quotes' && (
+          <div className="space-y-3">
+            {filteredQuotes.map((quote) => (
+              <div key={quote.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {quote.quote_reference}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {quote.id.substring(0, 8)}...
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-gray-900">
+                      ${quote.total_estimated_price?.toFixed(2) || '0.00'}
+                    </div>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getQuoteStatusColor(quote.quote_status)}`}>
+                      {quote.quote_status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 mb-3">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{quote.customer_name}</div>
+                    <div className="text-xs text-gray-500">{quote.customer_email}</div>
+                    {quote.customer_company && (
+                      <div className="text-xs text-gray-500">{quote.customer_company}</div>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Created: {new Date(quote.created_at).toLocaleDateString()}</span>
+                    <span>Expires: {new Date(quote.quote_expiry_date).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setSelectedQuote(quote)
+                    setShowQuoteModal(true)
+                  }}
+                  className="w-full bg-orange-100 text-orange-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  View Quote Details
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+      {/* Mobile Order Details Modal */}
       {showOrderModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] overflow-y-auto">
             <div className="p-6">
               {/* Header */}
               <div className="flex justify-between items-center mb-6">
@@ -1421,25 +1742,32 @@ export default function AdminDashboard() {
 
               {/* Print Areas */}
               <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Print Areas</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {selectedOrder.product_name === 'Color Copies' ? 'Print Configuration' : 'Print Areas'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedOrder.print_areas
-                    .filter(area => area.selected)
-                    .map((area) => (
+                  {selectedOrder.product_name === 'Color Copies' ? (
+                    <div className="bg-white rounded-lg p-3 border">
+                      <p className="font-medium">{selectedOrder.print_type_label || selectedOrder.print_type}</p>
+                      <p className="text-sm text-gray-600">${selectedOrder.print_type_price?.toFixed(2) || '0.00'}</p>
+                    </div>
+                  ) : (
+                    selectedOrder.print_areas?.filter(area => area.selected)?.map((area) => (
                       <div key={area.id} className="bg-white rounded-lg p-3 border">
                         <p className="font-medium">{area.name}</p>
                         <p className="text-sm text-gray-600">${area.price.toFixed(2)}</p>
                       </div>
-                    ))}
+                    )) || []
+                  )}
                 </div>
               </div>
 
               {/* Design Elements */}
-              {(selectedOrder.text_elements.length > 0 || selectedOrder.image_elements.length > 0) && (
+              {((selectedOrder.text_elements?.length || 0) > 0 || (selectedOrder.image_elements?.length || 0) > 0) && (
                 <div className="mt-6 bg-gray-50 rounded-lg p-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Design Elements</h3>
                   
-                  {selectedOrder.text_elements.length > 0 && (
+                  {(selectedOrder.text_elements?.length || 0) > 0 && (
                     <div className="mb-4">
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="font-medium text-gray-900">Text Elements:</h4>
@@ -1451,7 +1779,7 @@ export default function AdminDashboard() {
                           Download Text
                         </button>
                       </div>
-                      {selectedOrder.text_elements.map((element, index) => (
+                      {selectedOrder.text_elements?.map((element, index) => (
                         <div key={index} className="bg-white rounded-lg p-3 border mb-2">
                           <p className="font-medium">{element.text}</p>
                           <p className="text-sm text-gray-600">Area: {element.area}</p>
@@ -1460,7 +1788,7 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {selectedOrder.image_elements.length > 0 && (
+                  {(selectedOrder.image_elements?.length || 0) > 0 && (
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="font-medium text-gray-900">Image Elements:</h4>
@@ -1475,17 +1803,29 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {selectedOrder.image_elements.map((element, index) => (
+                        {selectedOrder.image_elements?.map((element, index) => (
                           <div key={index} className="bg-white rounded-lg p-3 border">
-                            <img 
-                              src={element.imageUrl} 
-                              alt={`Design ${index + 1}`}
-                              className="w-full h-20 object-cover rounded mb-2"
-                            />
+                            {element.imageUrl ? (
+                              <>
+                                <img 
+                                  src={element.imageUrl} 
+                                  alt={`Design ${index + 1}`}
+                                  className="w-full h-20 object-cover rounded mb-2"
+                                />
+                                <p className="text-xs text-gray-500">Data length: {element.imageUrl.length}</p>
+                              </>
+                            ) : (
+                              <div className="w-full h-20 bg-red-100 rounded mb-2 flex items-center justify-center">
+                                <p className="text-xs text-red-600">No image data</p>
+                              </div>
+                            )}
                             <p className="text-sm font-medium">{element.fileName || `Image ${index + 1}`}</p>
                             <p className="text-xs text-gray-600">Area: {element.area}</p>
                             <button
-                              onClick={() => downloadImage(element.imageUrl, element.fileName || `image_${index + 1}`, element.area)}
+                              onClick={() => {
+                                console.log('Downloading T-shirt image:', element.fileName, 'Data available:', !!element.imageUrl, 'Data length:', element.imageUrl?.length)
+                                downloadImage(element.imageUrl, element.fileName || `image_${index + 1}`, element.area)
+                              }}
                               className="mt-2 w-full px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 cursor-pointer flex items-center justify-center gap-1"
                             >
                               <Download className="h-3 w-3" />
@@ -1496,6 +1836,90 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Color Copies Files */}
+              {selectedOrder.product_name === 'Color Copies' && selectedOrder.front_side_files && selectedOrder.front_side_files.length > 0 && (
+                <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-blue-900">Uploaded Files</h3>
+                    <button
+                      onClick={() => {
+                        // Download all files as a ZIP
+                        const zip = new JSZip()
+                        selectedOrder.front_side_files?.forEach((file, index) => {
+                          if (file.data) {
+                            const base64Data = file.data.split(',')[1] // Remove data:image/png;base64, prefix
+                            zip.file(file.name, base64Data, { base64: true })
+                          }
+                        })
+                        zip.generateAsync({ type: 'blob' }).then((content) => {
+                          const link = document.createElement('a')
+                          link.href = URL.createObjectURL(content)
+                          link.download = `color-copies-files-${selectedOrder.id}.zip`
+                          link.click()
+                        })
+                      }}
+                      className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 cursor-pointer flex items-center gap-1"
+                    >
+                      <Download className="h-3 w-3" />
+                      Download All
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedOrder.front_side_files.map((file, index) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-gray-900">{file.name}</p>
+                          <span className="text-xs text-gray-500">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">Type: {file.type}</p>
+                        {file.data ? (
+                          <div className="mb-3">
+                            <img 
+                              src={file.data} 
+                              alt={file.name}
+                              className="w-full h-20 object-cover rounded mb-2"
+                            />
+                            <p className="text-xs text-gray-500">Data length: {file.data.length}</p>
+                          </div>
+                        ) : (
+                          <div className="mb-3 p-2 bg-red-100 rounded">
+                            <p className="text-xs text-red-600">No image data available</p>
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              console.log('Downloading file:', file.name, 'Data available:', !!file.data, 'Data length:', file.data?.length)
+                              // Create a download link for the file
+                              const link = document.createElement('a')
+                              link.href = file.data || `data:${file.type};base64,`
+                              link.download = file.name
+                              link.click()
+                            }}
+                            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 cursor-pointer flex items-center gap-1"
+                          >
+                            <Download className="h-3 w-3" />
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Color Copies Instructions */}
+              {selectedOrder.product_name === 'Color Copies' && selectedOrder.front_side_instructions && (
+                <div className="mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-900 mb-4">Designer Instructions</h3>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-gray-700">{selectedOrder.front_side_instructions}</p>
+                  </div>
                 </div>
               )}
 
@@ -1515,10 +1939,10 @@ export default function AdminDashboard() {
               )}
 
               {/* Area Instructions */}
-              {selectedOrder.area_instructions.length > 0 && (
+              {(selectedOrder.area_instructions?.length || 0) > 0 && (
                 <div className="mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
                   <h3 className="text-lg font-semibold text-green-900 mb-4">Designer Instructions</h3>
-                  {selectedOrder.area_instructions.map((instruction, index) => (
+                  {selectedOrder.area_instructions?.map((instruction, index) => (
                     <div key={index} className="bg-white rounded-lg p-3 border mb-2">
                       <p className="font-medium text-gray-900">Area: {instruction.areaId}</p>
                       <p className="text-gray-700">{instruction.instructions}</p>
@@ -1681,6 +2105,156 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Mobile Quote Details Modal */}
+      {showQuoteModal && selectedQuote && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Quote Details</h2>
+                  <p className="text-gray-600 mt-1">Quote Reference: {selectedQuote.quote_reference}</p>
+                </div>
+                <button
+                  onClick={() => setShowQuoteModal(false)}
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Customer Information */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Name</p>
+                    <p className="font-medium text-gray-900">{selectedQuote.customer_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="font-medium text-gray-900">{selectedQuote.customer_email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Phone</p>
+                    <p className="font-medium text-gray-900">{selectedQuote.customer_phone}</p>
+                  </div>
+                  {selectedQuote.customer_company && (
+                    <div>
+                      <p className="text-sm text-gray-600">Company</p>
+                      <p className="font-medium text-gray-900">{selectedQuote.customer_company}</p>
+                    </div>
+                  )}
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-600">Address</p>
+                    <p className="font-medium text-gray-900">{selectedQuote.customer_address}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quote Information */}
+              <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                <h3 className="text-lg font-semibold text-blue-900 mb-4">Quote Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-blue-600">Status</p>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getQuoteStatusColor(selectedQuote.quote_status)}`}>
+                      {selectedQuote.quote_status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-600">Total Price</p>
+                    <p className="font-medium text-blue-900">${selectedQuote.total_estimated_price?.toFixed(2) || '0.00'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-600">Expires</p>
+                    <p className="font-medium text-blue-900">{new Date(selectedQuote.quote_expiry_date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quote Notes */}
+              {selectedQuote.quote_notes && (
+                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-semibold text-green-900 mb-4">Quote Notes</h3>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-gray-700">{selectedQuote.quote_notes}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Internal Notes */}
+              {selectedQuote.internal_notes && (
+                <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-semibold text-yellow-900 mb-4">Internal Notes</h3>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-gray-700">{selectedQuote.internal_notes}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Products */}
+              {selectedQuote.quote_products && selectedQuote.quote_products.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Products</h3>
+                  <div className="space-y-4">
+                    {selectedQuote.quote_products.map((product, index) => (
+                      <div key={index} className="bg-white rounded-lg p-4 border">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium text-gray-900">{product.product_name}</h4>
+                            <p className="text-sm text-gray-600">Category: {product.product_category}</p>
+                            <p className="text-sm text-gray-600">Quantity: {product.quantity}</p>
+                            {product.size && <p className="text-sm text-gray-600">Size: {product.size}</p>}
+                            {product.color && <p className="text-sm text-gray-600">Color: {product.color}</p>}
+                            {product.print_type && <p className="text-sm text-gray-600">Print Type: {product.print_type}</p>}
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium text-gray-900">${product.total_price.toFixed(2)}</p>
+                            <p className="text-sm text-gray-600">${product.unit_price.toFixed(2)} each</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Attachments */}
+              {selectedQuote.quote_attachments && selectedQuote.quote_attachments.length > 0 && (
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4">Attachments</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedQuote.quote_attachments.map((attachment, index) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-gray-900">{attachment.file_name}</p>
+                            <p className="text-sm text-gray-600">
+                              {(attachment.file_size / 1024 / 1024).toFixed(2)} MB • {attachment.attachment_type}
+                            </p>
+                          </div>
+                          <a
+                            href={attachment.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                          >
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   )
 }

@@ -3,9 +3,10 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useState } from 'react'
-import { ShoppingCart, Palette, Mail, Phone } from 'lucide-react'
+import { ShoppingCart, Mail, Phone, Copy } from 'lucide-react'
 import TShirtDesigner from '@/components/TShirtDesigner'
 import QuoteForm from '@/components/QuoteForm'
+import ColorCopiesForm from '@/components/ColorCopiesForm'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('tshirts')
@@ -41,7 +42,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
         >
           {/* Logo */}
           <motion.div
@@ -91,33 +92,71 @@ export default function Home() {
          </motion.div>
 
          {/* Tab Navigation */}
-         <div className="mt-12 sm:mt-16 md:mt-20 lg:mt-24">
-           <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 px-4">
+         <motion.div 
+           className="mt-12 sm:mt-16 md:mt-20 lg:mt-24"
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.6, delay: 0.3 }}
+         >
+           <motion.div 
+             className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 px-4"
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.6, delay: 0.4 }}
+           >
              {[
                { id: 'tshirts', label: 'Custom T-Shirts', icon: ShoppingCart },
-               { id: 'gangsheet', label: 'Gangsheet', icon: Palette },
+               { id: 'color-copies', label: 'Color Copies', icon: Copy },
                { id: 'quote', label: 'Get A Quote', icon: Mail }
-             ].map((tab) => {
+             ].map((tab, index) => {
                const Icon = tab.icon
                return (
-                   <button
-                     key={tab.id}
-                     onClick={() => {
-                       setActiveTab(tab.id)
-                       // Scroll to tab content area
-                       setTimeout(() => {
-                         const contentArea = document.getElementById('tab-content')
-                         if (contentArea) {
-                         const elementPosition = contentArea.getBoundingClientRect().top
-                         const offsetPosition = elementPosition + window.pageYOffset - 250
-                           window.scrollTo({
-                             top: offsetPosition,
-                             behavior: 'smooth'
-                           })
-                         }
-                       }, 100)
-                     }}
-                     className={`flex items-center space-x-1 sm:space-x-2 px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg ${
+                 <motion.button
+                   key={tab.id}
+                   initial={{ 
+                     opacity: 0, 
+                     y: 30, 
+                     scale: 0.8,
+                     rotateX: -15
+                   }}
+                   animate={{ 
+                     opacity: 1, 
+                     y: 0, 
+                     scale: 1,
+                     rotateX: 0
+                   }}
+                   transition={{ 
+                     duration: 0.6, 
+                     delay: 0.5 + (index * 0.15),
+                     type: "spring",
+                     stiffness: 100,
+                     damping: 12
+                   }}
+                   whileHover={{ 
+                     scale: 1.05,
+                     y: -2,
+                     transition: { duration: 0.2 }
+                   }}
+                   whileTap={{ 
+                     scale: 0.95,
+                     transition: { duration: 0.1 }
+                   }}
+                   onClick={() => {
+                     setActiveTab(tab.id)
+                     // Scroll to tab content area
+                     setTimeout(() => {
+                       const contentArea = document.getElementById('tab-content')
+                       if (contentArea) {
+                       const elementPosition = contentArea.getBoundingClientRect().top
+                       const offsetPosition = elementPosition + window.pageYOffset - 250
+                         window.scrollTo({
+                           top: offsetPosition,
+                           behavior: 'smooth'
+                         })
+                       }
+                     }, 100)
+                   }}
+                   className={`flex items-center space-x-1 sm:space-x-2 px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg ${
                      activeTab === tab.id
                        ? 'text-white border border-orange-300'
                        : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50 bg-white'
@@ -126,14 +165,45 @@ export default function Home() {
                      backgroundColor: activeTab === tab.id ? '#FFA503' : 'white'
                    }}
                  >
-                   <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
-                   <span className="hidden sm:inline font-bold">{tab.label}</span>
-                   <span className="sm:hidden font-bold">{tab.label.split(' ')[0]}</span>
-                 </button>
+                   <motion.div
+                     initial={{ rotate: -180, scale: 0 }}
+                     animate={{ rotate: 0, scale: 1 }}
+                     transition={{ 
+                       duration: 0.5, 
+                       delay: 0.7 + (index * 0.15),
+                       type: "spring",
+                       stiffness: 200
+                     }}
+                   >
+                     <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                   </motion.div>
+                   <motion.span 
+                     className="hidden sm:inline font-bold"
+                     initial={{ opacity: 0, x: -10 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     transition={{ 
+                       duration: 0.4, 
+                       delay: 0.9 + (index * 0.15)
+                     }}
+                   >
+                     {tab.label}
+                   </motion.span>
+                   <motion.span 
+                     className="sm:hidden font-bold"
+                     initial={{ opacity: 0, x: -10 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     transition={{ 
+                       duration: 0.4, 
+                       delay: 0.9 + (index * 0.15)
+                     }}
+                   >
+                     {tab.label.split(' ')[0]}
+                   </motion.span>
+                 </motion.button>
                )
              })}
-           </div>
-         </div>
+           </motion.div>
+         </motion.div>
        </div>
         </div>
 
@@ -145,43 +215,52 @@ export default function Home() {
            <div id="tab-content" className="min-h-[600px] sm:min-h-[800px] pt-0 p-0 pb-8 sm:pb-16">
              {activeTab === 'tshirts' && (
                <motion.div
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.5 }}
+                 key="tshirts"
+                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                 transition={{ 
+                   duration: 0.6,
+                   type: "spring",
+                   stiffness: 100,
+                   damping: 15
+                 }}
                  className="h-full"
                >
                  <TShirtDesigner />
                </motion.div>
              )}
 
-             {activeTab === 'gangsheet' && (
+             {activeTab === 'color-copies' && (
                <motion.div
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.5 }}
-                 className="text-center"
+                 key="color-copies"
+                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                 transition={{ 
+                   duration: 0.6,
+                   type: "spring",
+                   stiffness: 100,
+                   damping: 15
+                 }}
+                 className="w-full"
                >
-                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FFA503', opacity: 0.1 }}>
-                   <Palette className="h-8 w-8" style={{ color: '#FFA503' }} />
-                 </div>
-                 <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Gangsheet Builder</h3>
-                 <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
-                   Create professional gangsheets for efficient printing layouts. Upload multiple designs and arrange them on a 22×24 inch canvas.
-                 </p>
-                 <div className="bg-gray-50 rounded-lg p-4 sm:p-8 mb-4 sm:mb-6">
-                   <p className="text-gray-500 text-sm sm:text-base">Gangsheet builder coming soon...</p>
-                 </div>
-                 <button className="text-white py-2 sm:py-3 px-4 sm:px-8 rounded-lg font-semibold transition-colors duration-300 hover:opacity-90 cursor-pointer text-sm sm:text-base" style={{ backgroundColor: '#FFA503' }}>
-                   Start Building
-                 </button>
+                 <ColorCopiesForm />
                </motion.div>
              )}
 
              {activeTab === 'quote' && (
                <motion.div
-                 initial={{ opacity: 0, y: 20 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 0.5 }}
+                 key="quote"
+                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                 transition={{ 
+                   duration: 0.6,
+                   type: "spring",
+                   stiffness: 100,
+                   damping: 15
+                 }}
                  className="w-full"
                >
                  <QuoteForm />
@@ -191,6 +270,17 @@ export default function Home() {
            </div>
          </div>
        </div>
+
+       {/* Footer */}
+       <footer className="relative z-10 mt-16">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+           <div className="text-center">
+             <p className="text-sm text-gray-500 font-bold">
+               © 2025 QuickCopy2.com. All rights reserved.
+             </p>
+           </div>
+         </div>
+      </footer>
     </div>
   )
 }

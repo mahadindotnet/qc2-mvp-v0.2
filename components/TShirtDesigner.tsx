@@ -378,8 +378,34 @@ export default function TShirtDesigner() {
         areaInstructions: design.areaInstructions
       }
       
-      // Save to session storage for checkout
-      sessionStorage.setItem('currentOrder', JSON.stringify(orderData))
+      // Save to session storage for checkout (with image data for database storage)
+      try {
+        // Create order data with full image information for database storage
+        const orderDataWithImages = {
+          ...orderData,
+          imageElements: design.imageElements.map(img => ({
+            id: img.id,
+            fileName: img.fileName,
+            area: img.area,
+            width: img.width,
+            height: img.height,
+            imageUrl: img.imageUrl // Keep imageUrl for database storage
+          })),
+          textElements: design.textElements.map(text => ({
+            id: text.id,
+            text: text.text,
+            color: text.color,
+            fontSize: text.fontSize,
+            area: text.area
+          }))
+        }
+        
+        sessionStorage.setItem('currentOrder', JSON.stringify(orderDataWithImages))
+      } catch (error) {
+        console.warn('Could not save to session storage:', error)
+        toast.error('Could not save order data. Please try again.')
+        return
+      }
       
       toast.success('Added to cart!', {
         description: 'Redirecting to checkout...',

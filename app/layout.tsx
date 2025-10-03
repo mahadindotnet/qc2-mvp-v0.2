@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Quick Copy 2 - Custom T-Shirt Designer",
   description: "Professional custom T-shirt printing and design services. Create your perfect custom shirts with our easy-to-use designer.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
 export default function RootLayout({

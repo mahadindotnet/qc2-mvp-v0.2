@@ -367,12 +367,21 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {item.shirt_size} • {item.print_type}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Color: <span className="inline-block w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: item.shirt_color }}></span> {item.shirt_color}
-                    </p>
+                    {item.product_name === 'Color Copies' ? (
+                      <div className="text-sm text-gray-600">
+                        <p>Print Type: {item.print_type}</p>
+                        {(item as any).color_copies_data?.frontSideInstructions && (
+                          <p className="mt-1">Instructions: {(item as any).color_copies_data.frontSideInstructions.substring(0, 50)}...</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        <p>{item.shirt_size} • {item.print_type}</p>
+                        <p>
+                          Color: <span className="inline-block w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: item.shirt_color }}></span> {item.shirt_color}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">${item.total_price.toFixed(2)}</p>
@@ -380,9 +389,11 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Print Areas */}
+                {/* Print Areas - Different display for Color Copies vs T-shirts */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Print Areas:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    {item.product_name === 'Color Copies' ? 'Print Configuration:' : 'Print Areas:'}
+                  </h4>
                   <div className="space-y-1">
                     {item.print_areas
                       .filter(area => area.selected)

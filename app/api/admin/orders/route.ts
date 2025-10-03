@@ -3,22 +3,35 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const { data, error } = await supabaseAdmin
+    // Fetch T-shirt orders
+    const { data: tshirtOrders, error: tshirtError } = await supabaseAdmin
       .from('tshirt_orders')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (error) {
-      console.error('Database error:', error)
-      return NextResponse.json(
-        { success: false, message: 'Error fetching orders', error: error.message },
-        { status: 500 }
-      )
+    if (tshirtError) {
+      console.error('T-shirt orders error:', tshirtError)
     }
+    
+    // Fetch Color Copies orders
+    const { data: colorCopiesOrders, error: colorCopiesError } = await supabaseAdmin
+      .from('color_copies_orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (colorCopiesError) {
+      console.error('Color Copies orders error:', colorCopiesError)
+    }
+    
+    // Combine both order types
+    const allOrders = [
+      ...(tshirtOrders || []),
+      ...(colorCopiesOrders || [])
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     
     return NextResponse.json({
       success: true,
-      orders: data
+      orders: allOrders
     })
     
   } catch (error) {
