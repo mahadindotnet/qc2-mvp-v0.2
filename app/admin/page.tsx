@@ -1078,7 +1078,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Header - Hidden on mobile */}
       <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-6 py-3">
+        <div className="px-4 py-3 max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">QuickCopy Admin Dashboard</h1>
@@ -1129,51 +1129,51 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          {/* Desktop Stats Row */}
-          <div className="grid grid-cols-4 gap-4 mt-4">
-            <div className="bg-gray-50 rounded-lg p-3">
+          {/* Desktop Stats Row - Compact */}
+          <div className="grid grid-cols-4 gap-3 mt-3">
+            <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                  <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                  <p className="text-xs font-medium text-gray-600">Orders</p>
+                  <p className="text-lg font-bold text-gray-900">{orders.length}</p>
                 </div>
-                <Package className="h-8 w-8 text-blue-600" />
+                <Package className="h-6 w-6 text-blue-600" />
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">
+                  <p className="text-xs font-medium text-gray-600">Pending</p>
+                  <p className="text-lg font-bold text-yellow-600">
                     {orders.filter(o => o.status === 'pending').length}
                   </p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
+                <Clock className="h-6 w-6 text-yellow-600" />
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-xs font-medium text-gray-600">Completed</p>
+                  <p className="text-lg font-bold text-green-600">
                     {orders.filter(o => o.status === 'completed').length}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Revenue</p>
-                  <p className="text-2xl font-bold text-orange-600">
+                  <p className="text-xs font-medium text-gray-600">Revenue</p>
+                  <p className="text-lg font-bold text-orange-600">
                     ${earnings.total.toFixed(0)}
                   </p>
                 </div>
-                <DollarSign className="h-8 w-8 text-orange-600" />
+                <DollarSign className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </div>
@@ -1256,7 +1256,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 py-4">
+      <div className="px-4 lg:px-4 py-4 max-w-7xl mx-auto">
         {/* Mobile Stats Cards - Hidden on desktop */}
         <div className="lg:hidden grid grid-cols-2 gap-3 mb-4">
           <div className="bg-white rounded-lg p-3 shadow-sm">
@@ -1589,10 +1589,10 @@ export default function AdminDashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-12 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <button
                         onClick={toggleSelectAll}
                         className="flex items-center gap-1 hover:text-gray-700 cursor-pointer"
@@ -1602,28 +1602,27 @@ export default function AdminDashboard() {
                         ) : (
                           <Square className="h-4 w-4 text-gray-400" />
                         )}
-                        <span className="hidden lg:inline">Select All</span>
                       </button>
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-24 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Order
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-40 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-32 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-20 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-20 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payment
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-20 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-24 px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -1631,7 +1630,7 @@ export default function AdminDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.has(order.id) ? 'bg-orange-50' : ''}`}>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="w-12 px-2 py-2 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedOrders.has(order.id)}
@@ -1639,65 +1638,65 @@ export default function AdminDashboard() {
                           className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
                         />
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="w-24 px-2 py-2 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            #{order.id.slice(0, 8)}
+                          <div className="text-xs font-medium text-gray-900">
+                            #{order.id.slice(0, 6)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {new Date(order.created_at).toLocaleDateString()}
+                            {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="w-40 px-2 py-2 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">
+                          <div className="text-xs font-medium text-gray-900 truncate">
                             {order.customer_name || 'N/A'}
                           </div>
-                          <div className="text-xs text-gray-500 truncate max-w-[150px]">
+                          <div className="text-xs text-gray-500 truncate">
                             {order.customer_email || 'N/A'}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                      <td className="w-32 px-2 py-2 whitespace-nowrap">
+                        <div className="text-xs text-gray-900">
                           {order.product_name}
                         </div>
                         <div className="text-xs text-gray-500">
                           {order.product_name === 'Color Copies' 
-                            ? `${order.print_type_label || order.print_type} • ${order.quantity} qty`
-                            : `${order.shirt_size} • ${order.quantity} qty`
+                            ? `${order.quantity} qty`
+                            : `${order.quantity} qty`
                           }
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                      <td className="w-20 px-2 py-2 whitespace-nowrap">
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(order.payment_status)}`}>
+                      <td className="w-20 px-2 py-2 whitespace-nowrap">
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${getPaymentStatusColor(order.payment_status)}`}>
                           {order.payment_status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${order.total_price.toFixed(2)}
+                      <td className="w-20 px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                        ${order.total_price.toFixed(0)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                      <td className="w-24 px-2 py-2 whitespace-nowrap text-xs font-medium">
                         <div className="flex space-x-1">
                           <button 
                             onClick={() => viewOrderDetails(order)}
                             className="p-1 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded cursor-pointer"
                             title="View Details"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </button>
                           <button
                             onClick={() => downloadOrderPackage(order)}
                             className="p-1 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded cursor-pointer"
                             title="Download Order Package"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-3 w-3" />
                           </button>
                           {order.status === 'pending' && (
                             <button
@@ -1705,7 +1704,7 @@ export default function AdminDashboard() {
                               className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded cursor-pointer"
                               title="Mark as Processing"
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-3 w-3" />
                             </button>
                           )}
                           {order.status === 'processing' && (
@@ -1714,7 +1713,7 @@ export default function AdminDashboard() {
                               className="p-1 text-green-600 hover:text-green-900 hover:bg-green-100 rounded cursor-pointer"
                               title="Mark as Completed"
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-3 w-3" />
                             </button>
                           )}
                         </div>
