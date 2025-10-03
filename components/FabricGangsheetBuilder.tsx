@@ -38,10 +38,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 // Removed Switch import - not available
-import { Slider } from '@/components/ui/slider'
+// Removed missing UI component imports
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 // Dynamic import for Fabric.js to avoid SSR issues
 
@@ -487,12 +485,12 @@ const FabricGangsheetBuilder: React.FC<GangsheetBuilderProps> = ({
           <p className="text-gray-600">Create professional gangsheets with drag & drop</p>
         </div>
         <div className="flex items-center gap-4">
-          <Badge variant="outline" className="text-sm">
+          <span className="px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-50">
             {items.length} items
-          </Badge>
-          <Badge variant="outline" className="text-sm">
+          </span>
+          <span className="px-2 py-1 text-sm border border-gray-300 rounded-md bg-gray-50">
             Total: ${totalPrice.toFixed(2)}
-          </Badge>
+          </span>
         </div>
       </div>
 
