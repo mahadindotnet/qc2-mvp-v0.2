@@ -206,7 +206,7 @@ export default function Home() {
                        }
                      }, 100)
                    }}
-                   className={`flex items-center space-x-1 sm:space-x-2 px-4 sm:px-6 md:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg ${
+                   className={`flex items-center space-x-1 sm:space-x-2 px-6 sm:px-6 md:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg ${
                      activeTab === tab.id
                        ? 'text-white border border-orange-300'
                        : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50 bg-white'
