@@ -531,10 +531,10 @@ export default function ColorCopiesForm() {
               <label className="text-sm font-medium text-gray-700">Quantity</label>
             </div>
 
-            {/* Quantity Selector and Add to Cart - 30/70 Split */}
-            <div className="flex items-center gap-4">
-              {/* Quantity Selector - 30% */}
-              <div className="w-[30%] flex items-center border border-gray-300 rounded-lg">
+            {/* Quantity Selector and Add to Cart - Mobile: Separate rows, Desktop: Same row */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Quantity Selector - Mobile: Full width, Desktop: 30% */}
+              <div className="w-full sm:w-[30%] flex items-center border border-gray-300 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setDesign(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
@@ -554,11 +554,11 @@ export default function ColorCopiesForm() {
                 </button>
               </div>
 
-              {/* Add to Cart Button - 70% */}
+              {/* Add to Cart Button - Mobile: Full width, Desktop: 70% */}
               <button
                 type="button"
                 disabled={isSubmitting || !design.printOptions || design.frontSideFiles.length === 0 || !design.turnaroundTime}
-                className="w-[70%] flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-gray-700 font-bold transition-colors duration-200"
+                className="w-full sm:w-[70%] flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-gray-700 font-bold transition-colors duration-200"
               >
                 <ShoppingCart className="h-4 w-4" />
                 ADD TO CART
