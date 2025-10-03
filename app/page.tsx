@@ -149,7 +149,7 @@ export default function Home() {
            transition={{ duration: 0.6, delay: 0.3 }}
          >
            <motion.div 
-             className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 px-4"
+             className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 px-2 sm:px-4"
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ duration: 0.6, delay: 0.4 }}
