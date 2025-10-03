@@ -1076,8 +1076,112 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Desktop Header - Hidden on mobile */}
+      <div className="hidden lg:block bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div className="px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">QuickCopy Admin Dashboard</h1>
+              <p className="text-sm text-gray-500">Order & Quote Management</p>
+            </div>
+            
+            {/* Desktop Controls */}
+            <div className="flex items-center gap-3">
+              {/* Sound Toggle */}
+              <button
+                onClick={() => {
+                  setSoundEnabled(!soundEnabled)
+                  if (!soundEnabled) {
+                    playNotificationSound('money')
+                  }
+                }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${soundEnabled ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <Bell className="h-4 w-4" />
+                Sound
+              </button>
+              
+              {/* Auto-refresh Toggle */}
+              <button
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${autoRefresh ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+                Auto-refresh
+              </button>
+              
+              {/* Manual Refresh */}
+              {!autoRefresh && (
+                <button
+                  onClick={() => {
+                    fetchOrders()
+                    fetchQuotes()
+                    setLastUpdate(new Date())
+                    playNotificationSound('success')
+                    toast.success('Refreshed!')
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Now
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Desktop Stats Row */}
+          <div className="grid grid-cols-4 gap-4 mt-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                </div>
+                <Package className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {orders.filter(o => o.status === 'pending').length}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-600" />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Completed</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {orders.filter(o => o.status === 'completed').length}
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Revenue</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    ${earnings.total.toFixed(0)}
+                  </p>
+                </div>
+                <DollarSign className="h-8 w-8 text-orange-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Mobile Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <div className="lg:hidden bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
@@ -1152,9 +1256,9 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="px-4 py-4">
-        {/* Mobile Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="px-4 lg:px-6 py-4">
+        {/* Mobile Stats Cards - Hidden on desktop */}
+        <div className="lg:hidden grid grid-cols-2 gap-3 mb-4">
           <div className="bg-white rounded-lg p-3 shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -1211,8 +1315,42 @@ export default function AdminDashboard() {
         </div>
 
 
+        {/* Desktop Tab Navigation - Compact */}
+        <div className="hidden lg:block mb-4">
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`flex-1 py-2 px-4 text-center font-medium text-sm rounded-l-lg ${
+                  activeTab === 'orders'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Orders ({orders.length})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('quotes')}
+                className={`flex-1 py-2 px-4 text-center font-medium text-sm rounded-r-lg ${
+                  activeTab === 'quotes'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Quotes ({quotes.length})
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Mobile Tab Navigation */}
-        <div className="mb-4">
+        <div className="lg:hidden mb-4">
           <div className="bg-white rounded-lg shadow-sm">
             <div className="flex">
               <button
@@ -1399,43 +1537,93 @@ export default function AdminDashboard() {
 
         {/* Desktop Orders Table - Show on medium screens and up */}
         {activeTab === 'orders' && (
-          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden mt-4">
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
+            {/* Desktop Filters - Compact */}
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search orders..."
+                      className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+                
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                
+                <select
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value)}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="all">All Payments</option>
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+                
+                <button 
+                  onClick={exportAllOrders}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                >
+                  <Download className="h-4 w-4" />
+                  Export All
+                </button>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <button
                         onClick={toggleSelectAll}
-                        className="flex items-center gap-2 hover:text-gray-700 cursor-pointer"
+                        className="flex items-center gap-1 hover:text-gray-700 cursor-pointer"
                       >
                         {isSelectAll ? (
                           <CheckSquare className="h-4 w-4 text-orange-500" />
                         ) : (
                           <Square className="h-4 w-4 text-gray-400" />
                         )}
-                        Select All
+                        <span className="hidden lg:inline">Select All</span>
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Order
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payment
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -1443,7 +1631,7 @@ export default function AdminDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className={`hover:bg-gray-50 ${selectedOrders.has(order.id) ? 'bg-orange-50' : ''}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedOrders.has(order.id)}
@@ -1451,62 +1639,62 @@ export default function AdminDashboard() {
                           className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
                             #{order.id.slice(0, 8)}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs text-gray-500">
                             {new Date(order.created_at).toLocaleDateString()}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">
                             {order.customer_name || 'N/A'}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs text-gray-500 truncate max-w-[150px]">
                             {order.customer_email || 'N/A'}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
                           {order.product_name}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-gray-500">
                           {order.product_name === 'Color Copies' 
                             ? `${order.print_type_label || order.print_type} • ${order.quantity} qty`
                             : `${order.shirt_size} • ${order.quantity} qty`
                           }
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(order.payment_status)}`}>
                           {order.payment_status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                         ${order.total_price.toFixed(2)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-1">
                           <button 
                             onClick={() => viewOrderDetails(order)}
-                            className="text-orange-600 hover:text-orange-900 cursor-pointer"
+                            className="p-1 text-orange-600 hover:text-orange-900 hover:bg-orange-100 rounded cursor-pointer"
                             title="View Details"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => downloadOrderPackage(order)}
-                            className="text-purple-600 hover:text-purple-900 cursor-pointer"
+                            className="p-1 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded cursor-pointer"
                             title="Download Order Package"
                           >
                             <Download className="h-4 w-4" />
@@ -1514,7 +1702,7 @@ export default function AdminDashboard() {
                           {order.status === 'pending' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'processing')}
-                              className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                              className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded cursor-pointer"
                               title="Mark as Processing"
                             >
                               <CheckCircle className="h-4 w-4" />
@@ -1523,7 +1711,7 @@ export default function AdminDashboard() {
                           {order.status === 'processing' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'completed')}
-                              className="text-green-600 hover:text-green-900 cursor-pointer"
+                              className="p-1 text-green-600 hover:text-green-900 hover:bg-green-100 rounded cursor-pointer"
                               title="Mark as Completed"
                             >
                               <CheckCircle className="h-4 w-4" />
