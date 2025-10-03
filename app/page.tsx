@@ -112,7 +112,7 @@ export default function Home() {
                   transition: { duration: 0.1 }
                 }}
               >
-                <motion.div
+                <motion.span
                   initial={{ rotate: -180, scale: 0 }}
                   animate={{ rotate: 0, scale: 1 }}
                   transition={{ 
@@ -121,9 +121,10 @@ export default function Home() {
                     type: "spring",
                     stiffness: 200
                   }}
+                  className="inline-block"
                 >
                   <Phone className="h-3 w-3" />
-                </motion.div>
+                </motion.span>
                 <motion.span
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
