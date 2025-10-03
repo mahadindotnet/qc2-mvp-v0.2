@@ -1315,71 +1315,71 @@ export default function AdminDashboard() {
         </div>
 
 
-        {/* Desktop Tab Navigation - Compact */}
+        {/* Desktop Tab Navigation - Separate Buttons */}
         <div className="hidden lg:block mb-4">
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="flex">
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`flex-1 py-2 px-4 text-center font-medium text-sm rounded-l-lg ${
-                  activeTab === 'orders'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Orders ({orders.length})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('quotes')}
-                className={`flex-1 py-2 px-4 text-center font-medium text-sm rounded-r-lg ${
-                  activeTab === 'quotes'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Quotes ({quotes.length})
-                </div>
-              </button>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`px-4 py-2 text-center font-medium text-sm rounded-lg transition-colors ${
+                activeTab === 'orders'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                Orders ({orders.length})
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('quotes')}
+              className={`px-4 py-2 text-center font-medium text-sm rounded-lg transition-colors ${
+                activeTab === 'quotes'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Quotes ({quotes.length})
+              </div>
+            </button>
           </div>
         </div>
 
-        {/* Mobile Tab Navigation */}
+        {/* Mobile Tab Navigation - Separate Buttons */}
         <div className="lg:hidden mb-4">
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="flex">
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-l-lg ${
-                  activeTab === 'orders'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-50 text-gray-600'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Package className="h-4 w-4" />
-                  Orders ({orders.length})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('quotes')}
-                className={`flex-1 py-3 px-4 text-center font-medium text-sm rounded-r-lg ${
-                  activeTab === 'quotes'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-50 text-gray-600'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Quotes ({quotes.length})
-                </div>
-              </button>
-            </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`px-3 py-2 text-center font-medium text-sm rounded-lg transition-colors ${
+                activeTab === 'orders'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-1">
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Orders</span>
+                <span className="sm:hidden">Orders</span>
+                <span className="ml-1">({orders.length})</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('quotes')}
+              className={`px-3 py-2 text-center font-medium text-sm rounded-lg transition-colors ${
+                activeTab === 'quotes'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200'
+              }`}
+            >
+              <div className="flex items-center gap-1">
+                <MessageSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Quotes</span>
+                <span className="sm:hidden">Quotes</span>
+                <span className="ml-1">({quotes.length})</span>
+              </div>
+            </button>
           </div>
         </div>
 
