@@ -58,6 +58,7 @@ export default function ColorCopiesForm() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   const selectedPrintOption = printOptions.find(option => option.value === design.printOptions)
   const selectedTurnaround = turnaroundOptions.find(option => option.value === design.turnaroundTime)
@@ -318,8 +319,24 @@ export default function ColorCopiesForm() {
                   <div className="grid grid-cols-3 gap-2">
                     {design.frontSideFiles.map((file, index) => (
                       <div key={index} className="relative bg-gray-100 rounded-lg p-2">
-                        <div className="aspect-square bg-gray-200 rounded flex items-center justify-center">
-                          <FileImage className="h-6 w-6 text-gray-400" />
+                        <div 
+                          className="aspect-square bg-gray-200 rounded flex items-center justify-center overflow-hidden cursor-pointer hover:bg-gray-300 transition-colors"
+                          onClick={() => {
+                            if (file.type.startsWith('image/')) {
+                              setPreviewImage(URL.createObjectURL(file))
+                            }
+                          }}
+                        >
+                          {file.type.startsWith('image/') ? (
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-full object-cover"
+                              onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                            />
+                          ) : (
+                            <FileImage className="h-6 w-6 text-gray-400" />
+                          )}
                         </div>
                         <button
                           type="button"
@@ -559,6 +576,31 @@ export default function ColorCopiesForm() {
           </div>
         </form>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-semibold">Image Preview</h3>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-4">
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="max-w-full max-h-[70vh] object-contain mx-auto"
+                onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
