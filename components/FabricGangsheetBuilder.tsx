@@ -37,7 +37,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
+// Removed Switch import - not available
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
@@ -554,10 +554,12 @@ const FabricGangsheetBuilder: React.FC<GangsheetBuilderProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="grid-toggle" className="text-sm">Show Grid</Label>
-                <Switch
+                <input
                   id="grid-toggle"
+                  type="checkbox"
                   checked={showGrid}
-                  onCheckedChange={setShowGrid}
+                  onChange={(e) => setShowGrid(e.target.checked)}
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
               </div>
               
@@ -578,10 +580,12 @@ const FabricGangsheetBuilder: React.FC<GangsheetBuilderProps> = ({
 
               <div className="flex items-center justify-between">
                 <Label htmlFor="snap-toggle" className="text-sm">Snap to Grid</Label>
-                <Switch
+                <input
                   id="snap-toggle"
+                  type="checkbox"
                   checked={snapToGrid}
-                  onCheckedChange={setSnapToGrid}
+                  onChange={(e) => setSnapToGrid(e.target.checked)}
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
               </div>
             </div>
