@@ -560,7 +560,7 @@ export default function TShirtDesigner() {
                       disabled={isDisabled}
                       className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                     />
-                    <span className={`text-sm font-medium whitespace-nowrap font-bold ${
+                    <span className={`text-sm font-medium font-bold ${
                       isDisabled 
                         ? 'text-gray-500' 
                         : 'text-orange-800'
@@ -603,7 +603,7 @@ export default function TShirtDesigner() {
                               disabled={isDisabled}
                               className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded cursor-pointer"
                             />
-                    <span className={`text-sm font-medium whitespace-nowrap ${
+                    <span className={`text-sm font-medium ${
                       isDisabled ? 'text-gray-500' : 'text-gray-900'
                     }`}>{area.name}</span>
                             <span className={`text-sm font-bold ${
