@@ -316,9 +316,9 @@ export default function ColorCopiesForm() {
               {design.frontSideFiles.length > 0 && (
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Uploaded Images:</h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-1">
                     {design.frontSideFiles.map((file, index) => (
-                      <div key={index} className="relative bg-gray-100 rounded-lg p-2">
+                      <div key={index} className="relative bg-gray-100 rounded p-1">
                         <div 
                           className="aspect-square bg-gray-200 rounded flex items-center justify-center overflow-hidden cursor-pointer hover:bg-gray-300 transition-colors"
                           onClick={() => {
@@ -335,17 +335,17 @@ export default function ColorCopiesForm() {
                               onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
                             />
                           ) : (
-                            <FileImage className="h-6 w-6 text-gray-400" />
+                            <FileImage className="h-4 w-4 text-gray-400" />
                           )}
                         </div>
                         <button
                           type="button"
                           onClick={() => removeFile(index, 'front')}
-                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          className="absolute -top-0.5 -right-0.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-2 w-2" />
                         </button>
-                        <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
+                        <p className="text-xs text-gray-600 mt-0.5 truncate leading-tight">{file.name}</p>
                       </div>
                     ))}
                   </div>
