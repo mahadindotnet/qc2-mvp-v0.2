@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ShoppingCart, Palette, Plus, Minus } from 'lucide-react'
 import { HexColorPicker } from 'react-colorful'
 import { toast } from 'sonner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import FrontBackCustomization from './FrontBackCustomization'
 
 interface PrintArea {
@@ -990,17 +991,23 @@ export default function TShirtDesigner() {
                           {formValidationErrors.size}
                         </p>
                       )}
-              <select
+              <Select
                 value={design.size}
-                onChange={(e) => setDesign(prev => ({ ...prev, size: e.target.value }))}
-                className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
-                  formValidationErrors.size ? 'border-red-500' : 'border-gray-400'
-                }`}
+                onValueChange={(value) => setDesign(prev => ({ ...prev, size: value }))}
               >
-                {SHIRT_SIZES.map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
+                <SelectTrigger className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
+                  formValidationErrors.size ? 'border-red-500' : 'border-orange-500'
+                }`}>
+                  <SelectValue placeholder="Select Size" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-orange-500 rounded-lg shadow-lg">
+                  {SHIRT_SIZES.map((size) => (
+                    <SelectItem key={size} value={size} className="hover:bg-orange-50 cursor-pointer">
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
                     {/* Print Type */}
@@ -1014,17 +1021,23 @@ export default function TShirtDesigner() {
                           {formValidationErrors.printType}
                         </p>
                       )}
-              <select
+              <Select
                 value={design.printType}
-                onChange={(e) => setDesign(prev => ({ ...prev, printType: e.target.value }))}
-                className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
-                  formValidationErrors.printType ? 'border-red-500' : 'border-gray-400'
-                }`}
+                onValueChange={(value) => setDesign(prev => ({ ...prev, printType: value }))}
               >
-                {PRINT_TYPES.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
+                <SelectTrigger className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
+                  formValidationErrors.printType ? 'border-red-500' : 'border-orange-500'
+                }`}>
+                  <SelectValue placeholder="Select Print Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-orange-500 rounded-lg shadow-lg">
+                  {PRINT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type} className="hover:bg-orange-50 cursor-pointer">
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -1043,33 +1056,43 @@ export default function TShirtDesigner() {
                           {formValidationErrors.turnaroundTime}
                         </p>
                       )}
-              <select
+              <Select
                 value={JSON.stringify(design.turnaroundTime)}
-                onChange={(e) => setDesign(prev => ({ ...prev, turnaroundTime: JSON.parse(e.target.value) }))}
-                className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
-                  formValidationErrors.turnaroundTime ? 'border-red-500' : 'border-gray-400'
-                }`}
+                onValueChange={(value) => setDesign(prev => ({ ...prev, turnaroundTime: JSON.parse(value) }))}
               >
-                {TURNAROUND_OPTIONS.map((option) => (
-                  <option key={option.label} value={JSON.stringify(option)}>
-                    {option.label} (${option.price.toFixed(2)})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer ${
+                  formValidationErrors.turnaroundTime ? 'border-red-500' : 'border-orange-500'
+                }`}>
+                  <SelectValue placeholder="Select Turnaround Time" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-orange-500 rounded-lg shadow-lg">
+                  {TURNAROUND_OPTIONS.map((option) => (
+                    <SelectItem key={option.label} value={JSON.stringify(option)} className="hover:bg-orange-50 cursor-pointer">
+                      {option.label} (${option.price.toFixed(2)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Design Proof */}
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-3">Design Proof Before Printing?</label>
-              <select
+              <Select
                 value={design.designProof}
-                onChange={(e) => setDesign(prev => ({ ...prev, designProof: e.target.value }))}
-                className="w-full p-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer"
+                onValueChange={(value) => setDesign(prev => ({ ...prev, designProof: value }))}
               >
-                {DESIGN_PROOF_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full p-3 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer">
+                  <SelectValue placeholder="Select Design Proof Option" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-orange-500 rounded-lg shadow-lg">
+                  {DESIGN_PROOF_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option} className="hover:bg-orange-50 cursor-pointer">
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -1078,15 +1101,21 @@ export default function TShirtDesigner() {
         {design.designProof === 'Yes, send design proof before printing' && (
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-800 mb-3">Quick way to send you design proof?</label>
-            <select
+            <Select
               value={design.proofContactMethod}
-              onChange={(e) => setDesign(prev => ({ ...prev, proofContactMethod: e.target.value, contactDetails: '' }))}
-              className="w-full p-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer"
+              onValueChange={(value) => setDesign(prev => ({ ...prev, proofContactMethod: value, contactDetails: '' }))}
             >
-              {DESIGN_PROOF_CONTACT_OPTIONS.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full p-3 border-2 border-orange-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-medium cursor-pointer">
+                <SelectValue placeholder="Select Contact Method" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-orange-500 rounded-lg shadow-lg">
+                {DESIGN_PROOF_CONTACT_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={option} className="hover:bg-orange-50 cursor-pointer">
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             
             {/* Contact Details Input */}
             <div className="mt-4">
