@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Search, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Archive, Edit3, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw, MessageSquare, Users } from 'lucide-react'
 import JSZip from 'jszip'
 import { toast } from 'sonner'
-import { Howl } from 'howler'
+// Removed howler import - using Web Audio API instead
 
 interface Order {
   id: string
@@ -289,17 +289,7 @@ export default function AdminDashboard() {
 
       const pattern = soundPatterns[type]
       
-      // Create a Howl instance for the notification sound
-      const sound = new Howl({
-        src: [], // We'll generate the sound programmatically
-        volume: pattern.volume,
-        onload: () => {
-          sound.play()
-        },
-        onend: () => {
-          sound.unload()
-        }
-      })
+      // Generate sound using Web Audio API directly
 
       // Generate the sound using Web Audio API but with Howler's better handling
       const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
@@ -340,19 +330,7 @@ export default function AdminDashboard() {
       const coinVolumes = [0.4, 0.35, 0.3, 0.25, 0.2]
       
       coinFrequencies.forEach((freq, index) => {
-        const coinSound = new Howl({
-          src: [], // Generate programmatically
-          volume: coinVolumes[index],
-          rate: 1 + (index * 0.1), // Slightly different rates for variety
-          onload: () => {
-            setTimeout(() => {
-              coinSound.play()
-            }, index * 50) // Stagger the sounds
-          },
-          onend: () => {
-            coinSound.unload()
-          }
-        })
+        // Generate coin sound using Web Audio API
 
         // Generate the coin drop sound
         const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
@@ -373,23 +351,13 @@ export default function AdminDashboard() {
         oscillator.start(startTime)
         oscillator.stop(startTime + 0.1)
         
-        coinSounds.push(coinSound)
+        // Sound generated directly with Web Audio API
       })
       
       // Add the "cha-ching" finale after a delay
       setTimeout(() => {
         try {
-          const chingSound = new Howl({
-            src: [],
-            volume: 0.3,
-            rate: 1.2,
-            onload: () => {
-              chingSound.play()
-            },
-            onend: () => {
-              chingSound.unload()
-            }
-          })
+          // Generate ching sound using Web Audio API
 
           // Generate the cha-ching sound
           const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
