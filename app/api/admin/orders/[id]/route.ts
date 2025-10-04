@@ -39,3 +39,52 @@ export async function PATCH(
     )
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const orderId = (await params).id
+    
+    // First, try to delete from tshirt_orders
+    const { error: tshirtError } = await supabaseAdmin
+      .from('tshirt_orders')
+      .delete()
+      .eq('id', orderId)
+    
+    // If not found in tshirt_orders, try color_copies_orders
+    if (tshirtError && tshirtError.code === 'PGRST116') {
+      const { error: colorCopiesError } = await supabaseAdmin
+        .from('color_copies_orders')
+        .delete()
+        .eq('id', orderId)
+      
+      if (colorCopiesError) {
+        console.error('Database error:', colorCopiesError)
+        return NextResponse.json(
+          { success: false, message: 'Error deleting order', error: colorCopiesError.message },
+          { status: 500 }
+        )
+      }
+    } else if (tshirtError) {
+      console.error('Database error:', tshirtError)
+      return NextResponse.json(
+        { success: false, message: 'Error deleting order', error: tshirtError.message },
+        { status: 500 }
+      )
+    }
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Order deleted successfully'
+    })
+    
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    return NextResponse.json(
+      { success: false, message: 'Error deleting order' },
+      { status: 500 }
+    )
+  }
+}

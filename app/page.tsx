@@ -2,11 +2,13 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useState } from 'react'
-import { ShoppingCart, Mail, Phone, Copy } from 'lucide-react'
-import TShirtDesigner from '@/components/TShirtDesigner'
-import QuoteForm from '@/components/QuoteForm'
-import ColorCopiesForm from '@/components/ColorCopiesForm'
+import { useState, lazy, Suspense } from 'react'
+import { ShoppingCart, Mail, Phone, Copy, Grid3X3 } from 'lucide-react'
+
+// Lazy load heavy components for better performance
+const TShirtDesigner = lazy(() => import('@/components/TShirtDesigner'))
+const QuoteForm = lazy(() => import('@/components/QuoteForm'))
+const ColorCopiesForm = lazy(() => import('@/components/ColorCopiesForm'))
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('tshirts')
@@ -61,6 +63,8 @@ export default function Home() {
                   height={300}
                   className="drop-shadow-lg max-w-[200px] max-h-[200px] sm:max-w-[250px] sm:max-h-[250px] md:max-w-[300px] md:max-h-[300px] w-auto h-auto"
                   priority
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                 />
               </div>
             </div>
@@ -149,14 +153,15 @@ export default function Home() {
            transition={{ duration: 0.6, delay: 0.3 }}
          >
            <motion.div 
-             className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 px-0 sm:px-4"
-             initial={{ opacity: 0, y: 20 }}
+             className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 px-2 sm:px-4 py-10 max-w-full sm:flex-nowrap sm:overflow-x-auto min-h-[120px] sm:min-h-auto"
+             initial={{ opacity: 0, y: 10 }}
              animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.6, delay: 0.4 }}
+             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
            >
              {[
                { id: 'tshirts', label: 'Custom T-Shirts', icon: ShoppingCart },
                { id: 'color-copies', label: 'Color Copies', icon: Copy },
+               { id: 'gangsheet', label: 'Custom Gangsheet', icon: Grid3X3 },
                { id: 'quote', label: 'Get A Quote', icon: Mail }
              ].map((tab, index) => {
                const Icon = tab.icon
@@ -206,7 +211,7 @@ export default function Home() {
                        }
                      }, 100)
                    }}
-                   className={`flex items-center space-x-1 sm:space-x-2 px-6 sm:px-6 md:px-8 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg ${
+                   className={`flex items-center justify-center space-x-1 sm:space-x-2 px-1 sm:px-4 md:px-6 py-4 sm:py-3 text-xs sm:text-sm font-medium transition-all duration-300 rounded-lg cursor-pointer shadow-lg whitespace-nowrap w-[calc(50%-6px)] sm:w-auto h-12 sm:h-auto ${
                      activeTab === tab.id
                        ? 'text-white border border-orange-300'
                        : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50 bg-white'
@@ -247,7 +252,7 @@ export default function Home() {
                        delay: 0.9 + (index * 0.15)
                      }}
                    >
-                     {tab.label.split(' ')[0]}
+                     {tab.label}
                    </motion.span>
                  </motion.button>
                )
@@ -277,7 +282,9 @@ export default function Home() {
                  }}
                  className="h-full"
                >
-                 <TShirtDesigner />
+                 <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>}>
+                   <TShirtDesigner />
+                 </Suspense>
                </motion.div>
              )}
 
@@ -295,7 +302,46 @@ export default function Home() {
                  }}
                  className="w-full"
                >
-                 <ColorCopiesForm />
+                 <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>}>
+                   <ColorCopiesForm />
+                 </Suspense>
+               </motion.div>
+             )}
+
+             {activeTab === 'gangsheet' && (
+               <motion.div
+                 key="gangsheet"
+                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                 transition={{ 
+                   duration: 0.6,
+                   type: "spring",
+                   stiffness: 100,
+                   damping: 15
+                 }}
+                 className="w-full"
+               >
+                 <div className="w-full max-w-4xl mx-auto bg-white/60 backdrop-blur-md p-4 sm:p-6 rounded-xl shadow-lg">
+                   <div className="text-center">
+                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                       Custom Gangsheet Builder
+                     </h2>
+                     <p className="text-gray-600 mb-6">
+                       Create professional gangsheets for your printing projects
+                     </p>
+                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                       <div className="flex items-center justify-center mb-4">
+                         <Grid3X3 className="h-8 w-8 text-orange-500 mr-2" />
+                         <span className="text-lg font-semibold text-orange-700">Coming Soon!</span>
+                       </div>
+                       <p className="text-orange-600">
+                         Our advanced gangsheet builder is currently under development. 
+                         This powerful tool will help you create professional layouts for your printing projects.
+                       </p>
+                     </div>
+                   </div>
+                 </div>
                </motion.div>
              )}
 
@@ -313,7 +359,9 @@ export default function Home() {
                  }}
                  className="w-full"
                >
-                 <QuoteForm />
+                 <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>}>
+                   <QuoteForm />
+                 </Suspense>
                </motion.div>
              )}
 
