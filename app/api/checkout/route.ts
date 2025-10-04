@@ -58,9 +58,11 @@ export async function POST(request: NextRequest) {
     const orderData: any = await request.json()
     console.log('Received order data:', JSON.stringify(orderData, null, 2))
     
-    // Determine if this is a Color Copies order
+    // Determine order type
     const isColorCopies = orderData.product_name === 'Color Copies'
+    const isGangsheet = orderData.product_name === 'Custom Gangsheet'
     console.log('Is Color Copies order:', isColorCopies)
+    console.log('Is Custom Gangsheet order:', isGangsheet)
     
     if (isColorCopies) {
       // Handle Color Copies order
@@ -157,6 +159,108 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         message: 'Color Copies order created successfully',
+        orderId: data.id,
+        totalPrice: totalPrice
+      })
+      
+    } else if (isGangsheet) {
+      // Handle Custom Gangsheet order
+      const gangsheetData = orderData.gangsheet_data
+      console.log('Custom Gangsheet data:', JSON.stringify(gangsheetData, null, 2))
+      
+      if (!gangsheetData) {
+        throw new Error('Custom Gangsheet data is missing')
+      }
+      
+      // Calculate pricing for Custom Gangsheet
+      const gangsheetArea = gangsheetData.gangsheet_width * gangsheetData.gangsheet_height * 12 // Convert feet to inches
+      const basePrice = gangsheetArea * gangsheetData.cost_per_square_inch
+      const turnaroundPrice = gangsheetData.turnaround_time_price
+      const totalPrice = basePrice + turnaroundPrice
+      
+      console.log('Custom Gangsheet pricing:', { gangsheetArea, basePrice, turnaroundPrice, totalPrice })
+      
+      // Prepare Custom Gangsheet order record
+      const orderRecord = {
+        // Product Information
+        product_name: 'Custom Gangsheet',
+        
+        // Gangsheet Specifications
+        gangsheet_height: gangsheetData.gangsheet_height,
+        gangsheet_width: gangsheetData.gangsheet_width,
+        setup_type: gangsheetData.setup_type,
+        
+        // File Uploads
+        full_setup_files: gangsheetData.full_setup_files || [],
+        design_elements: gangsheetData.design_elements || [],
+        
+        // Special Instructions
+        special_instructions: gangsheetData.special_instructions || '',
+        
+        // Turnaround Time
+        turnaround_time: gangsheetData.turnaround_time,
+        turnaround_time_label: gangsheetData.turnaround_time_label,
+        turnaround_time_price: gangsheetData.turnaround_time_price,
+        
+        // Design Proof
+        design_proof_required: gangsheetData.design_proof === 'Yes, send design proof before printing',
+        design_proof: gangsheetData.design_proof,
+        proof_contact_method: gangsheetData.proof_contact_method,
+        proof_contact_details: gangsheetData.contact_details,
+        
+        // Pricing
+        gangsheet_area: gangsheetArea,
+        cost_per_square_inch: gangsheetData.cost_per_square_inch,
+        base_price: basePrice,
+        turnaround_price: turnaroundPrice,
+        total_price: totalPrice,
+        
+        // Customer Information
+        customer_name: `${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`,
+        customer_email: orderData.customerDetails.email,
+        customer_phone: orderData.customerDetails.phone,
+        customer_address: `${orderData.customerDetails.address}, ${orderData.customerDetails.city}, ${orderData.customerDetails.state} ${orderData.customerDetails.zipCode}, ${orderData.customerDetails.country}`,
+        
+        // Order Status
+        status: orderData.status,
+        payment_status: orderData.paymentStatus,
+        
+        // Additional Notes
+        notes: `Custom Gangsheet order placed via checkout system. Customer: ${orderData.customerDetails.firstName} ${orderData.customerDetails.lastName}`
+      }
+      
+      // Insert into gangsheet_orders table
+      console.log('Inserting Custom Gangsheet order record:', JSON.stringify(orderRecord, null, 2))
+      
+      const { data, error } = await supabaseAdmin
+        .from('gangsheet_orders')
+        .insert([orderRecord])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Custom Gangsheet database error:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        
+        // Check if the table doesn't exist
+        if (error.message && error.message.includes('relation "gangsheet_orders" does not exist')) {
+          return NextResponse.json(
+            { success: false, message: 'Custom Gangsheet table not found. Please run the database schema setup first.', error: error.message },
+            { status: 500 }
+          )
+        }
+        
+        return NextResponse.json(
+          { success: false, message: 'Error saving Custom Gangsheet order to database', error: error.message },
+          { status: 500 }
+        )
+      }
+      
+      console.log('Custom Gangsheet order created successfully:', data.id)
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Custom Gangsheet order created successfully',
         orderId: data.id,
         totalPrice: totalPrice
       })

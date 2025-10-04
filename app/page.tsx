@@ -9,6 +9,7 @@ import { ShoppingCart, Mail, Phone, Copy, Grid3X3 } from 'lucide-react'
 const TShirtDesigner = lazy(() => import('@/components/TShirtDesigner'))
 const QuoteForm = lazy(() => import('@/components/QuoteForm'))
 const ColorCopiesForm = lazy(() => import('@/components/ColorCopiesForm'))
+const CustomGangsheetForm = lazy(() => import('@/components/CustomGangsheetForm'))
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('tshirts')
@@ -322,26 +323,9 @@ export default function Home() {
                  }}
                  className="w-full"
                >
-                 <div className="w-full max-w-4xl mx-auto bg-white/60 backdrop-blur-md p-4 sm:p-6 rounded-xl shadow-lg">
-                   <div className="text-center">
-                     <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-                       Custom Gangsheet Builder
-                     </h2>
-                     <p className="text-gray-600 mb-6">
-                       Create professional gangsheets for your printing projects
-                     </p>
-                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-                       <div className="flex items-center justify-center mb-4">
-                         <Grid3X3 className="h-8 w-8 text-orange-500 mr-2" />
-                         <span className="text-lg font-semibold text-orange-700">Coming Soon!</span>
-                       </div>
-                       <p className="text-orange-600">
-                         Our advanced gangsheet builder is currently under development. 
-                         This powerful tool will help you create professional layouts for your printing projects.
-                       </p>
-                     </div>
-                   </div>
-                 </div>
+                 <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>}>
+                   <CustomGangsheetForm />
+                 </Suspense>
                </motion.div>
              )}
 

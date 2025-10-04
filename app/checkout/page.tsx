@@ -374,6 +374,12 @@ export default function CheckoutPage() {
                           <p className="mt-1">Instructions: {(item as any).color_copies_data.frontSideInstructions.substring(0, 50)}...</p>
                         )}
                       </div>
+                    ) : item.product_name === 'Custom Gangsheet' ? (
+                      <div className="text-sm text-gray-600">
+                        <p>Height: {item.gangsheet_data?.gangsheet_height} feet</p>
+                        <p>Width: {item.gangsheet_data?.gangsheet_width} inches</p>
+                        <p>Setup: {item.gangsheet_data?.setup_type === 'full_setup' ? 'Full Setup' : 'Element Only'}</p>
+                      </div>
                     ) : (
                       <div className="text-sm text-gray-600">
                         <p>{item.shirt_size} • {item.print_type}</p>
@@ -384,25 +390,36 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900">${item.total_price.toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                    <p className="font-semibold text-gray-900">${(item.total_price || 0).toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity || 1}</p>
                   </div>
                 </div>
 
-                {/* Print Areas - Different display for Color Copies vs T-shirts */}
+                {/* Print Areas - Different display for different product types */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    {item.product_name === 'Color Copies' ? 'Print Configuration:' : 'Print Areas:'}
+                    {item.product_name === 'Color Copies' ? 'Print Configuration:' : 
+                     item.product_name === 'Custom Gangsheet' ? 'Gangsheet Details:' : 'Print Areas:'}
                   </h4>
                   <div className="space-y-1">
-                    {item.print_areas
-                      .filter(area => area.selected)
-                      .map((area) => (
-                        <div key={area.id} className="flex justify-between text-sm">
-                          <span className="text-gray-600">{area.name}</span>
-                          <span className="text-gray-900">${area.price.toFixed(2)}</span>
-                        </div>
-                      ))}
+                    {item.product_name === 'Custom Gangsheet' ? (
+                      <div className="text-sm text-gray-600">
+                        <p>Height: {item.gangsheet_data?.gangsheet_height} feet</p>
+                        <p>Width: {item.gangsheet_data?.gangsheet_width} inches</p>
+                        <p>Setup Type: {item.gangsheet_data?.setup_type === 'full_setup' ? 'Full Setup' : 'Element Only'}</p>
+                        <p>Area: {item.gangsheet_data?.gangsheet_area?.toFixed(2)} sq in</p>
+                        <p>Base Price: ${item.base_price?.toFixed(2)}</p>
+                      </div>
+                    ) : item.print_areas ? (
+                      item.print_areas
+                        .filter(area => area.selected)
+                        .map((area) => (
+                          <div key={area.id} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{area.name}</span>
+                            <span className="text-gray-900">${area.price.toFixed(2)}</span>
+                          </div>
+                        ))
+                    ) : null}
                   </div>
                 </div>
 
@@ -410,11 +427,19 @@ export default function CheckoutPage() {
                 <div className="mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Turnaround Time:</span>
-                    <span className="text-gray-900">{item.turnaround_time.label}</span>
+                    <span className="text-gray-900">
+                      {item.product_name === 'Custom Gangsheet' 
+                        ? item.gangsheet_data?.turnaround_time_label 
+                        : item.turnaround_time?.label}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Rush Fee:</span>
-                    <span className="text-gray-900">${item.turnaround_time.price.toFixed(2)}</span>
+                    <span className="text-gray-900">
+                      ${item.product_name === 'Custom Gangsheet' 
+                        ? (item.gangsheet_data?.turnaround_time_price || 0).toFixed(2)
+                        : (item.turnaround_time?.price || 0).toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
