@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, Download, Eye, CheckCircle, XCircle, Clock, Package, FileText, Archive, Edit3, CheckSquare, Square, DollarSign, TrendingUp, Bell, RefreshCw, MessageSquare, Users, X } from 'lucide-react'
 import JSZip from 'jszip'
 import { toast } from 'sonner'
@@ -104,6 +105,8 @@ interface Quote {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
@@ -134,7 +137,26 @@ export default function AdminDashboard() {
   const [lastNotificationTime, setLastNotificationTime] = useState<Date>(new Date(0))
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
+  // Check authentication on component mount
   useEffect(() => {
+    const checkAuth = () => {
+      const authCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('admin_authenticated='))
+      
+      if (authCookie && authCookie.split('=')[1] === 'true') {
+        setIsAuthenticated(true)
+      } else {
+        router.push('/admin/login')
+      }
+    }
+    
+    checkAuth()
+  }, [router])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    
     fetchOrders()
     fetchQuotes()
     
@@ -1105,6 +1127,15 @@ export default function AdminDashboard() {
     ])
 
     return [headers, ...csvRows].map(row => row.join(',')).join('\n')
+  }
+
+  // Show loading while checking authentication
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    )
   }
 
   if (loading) {

@@ -13,6 +13,7 @@ import {
   Download,
   Bell,
   RefreshCw,
+  LogOut,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -247,6 +248,18 @@ export function AdminSidebar({
       </SidebarContent>
       <SidebarFooter className="border-t border-gray-200">
         <NavUser user={data.user} />
+        <div className="px-3 py-2">
+          <button
+            onClick={() => {
+              document.cookie = 'admin_authenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+              window.location.href = '/admin/login'
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-md transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </button>
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
