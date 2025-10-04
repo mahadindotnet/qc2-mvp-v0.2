@@ -76,13 +76,12 @@ export default function CustomGangsheetForm() {
   // Calculate pricing
   const calculatePricing = () => {
     const heightInInches = formData.gangsheetHeight * 12 // Convert feet to inches
-    const totalSquareInches = GANGSHEET_WIDTH * heightInInches
-    const basePrice = totalSquareInches * COST_PER_SQUARE_INCH
+    const basePrice = heightInInches * COST_PER_SQUARE_INCH // Price based on height only
     const setupFee = 0 // No additional setup fees
     const totalPrice = basePrice + setupFee
 
     return {
-      totalSquareInches,
+      heightInInches,
       basePrice,
       setupFee,
       totalPrice
@@ -271,6 +270,7 @@ export default function CustomGangsheetForm() {
       const gangsheetData = {
         gangsheet_height: formData.gangsheetHeight,
         gangsheet_width: GANGSHEET_WIDTH,
+        gangsheet_area: heightInInches, // Area is now just the height in inches
         setup_type: formData.setupType,
         full_setup_files: formData.fullSetupFiles || [],
         design_elements: formData.elements.map(element => ({
@@ -290,8 +290,8 @@ export default function CustomGangsheetForm() {
       }
 
       // Calculate pricing
-      const gangsheetArea = GANGSHEET_WIDTH * formData.gangsheetHeight * 12 // Convert feet to inches
-      const basePrice = gangsheetArea * COST_PER_SQUARE_INCH
+      const heightInInches = formData.gangsheetHeight * 12 // Convert feet to inches
+      const basePrice = heightInInches * COST_PER_SQUARE_INCH // Price based on height only
       const turnaroundPrice = getTurnaroundPrice(formData.turnaroundTime)
       const totalPrice = basePrice + turnaroundPrice
 
@@ -856,11 +856,11 @@ export default function CustomGangsheetForm() {
                       <span className="font-medium">{GANGSHEET_WIDTH}" × {formData.gangsheetHeight} ft</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Total Square Inches:</span>
-                      <span className="font-medium">{pricing.totalSquareInches} sq in</span>
+                      <span className="text-gray-600">Height in Inches:</span>
+                      <span className="font-medium">{pricing.heightInInches} in</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Cost per Square Inch:</span>
+                      <span className="text-gray-600">Cost per Inch:</span>
                       <span className="font-medium">${COST_PER_SQUARE_INCH.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
