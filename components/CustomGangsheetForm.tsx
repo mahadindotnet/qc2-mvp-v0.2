@@ -97,8 +97,7 @@ export default function CustomGangsheetForm() {
       id: Date.now().toString(),
       name: '',
       quantity: 1,
-      file: undefined,
-      fileUrl: undefined,
+      files: [],
       notes: ''
     }
     setFormData(prev => ({
