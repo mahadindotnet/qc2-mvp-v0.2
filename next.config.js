@@ -11,7 +11,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Performance optimizations
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
   // Image optimization
@@ -22,7 +21,6 @@ const nextConfig = {
   },
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 }
