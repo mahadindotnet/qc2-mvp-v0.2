@@ -3,21 +3,24 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    // Fetch T-shirt orders
-    const { data: tshirtOrders, error: tshirtError } = await supabaseAdmin
-      .from('tshirt_orders')
-      .select('*')
-      .order('created_at', { ascending: false })
+    // Fetch both order types in parallel for better performance
+    const [tshirtResult, colorCopiesResult] = await Promise.all([
+      supabaseAdmin
+        .from('tshirt_orders')
+        .select('*')
+        .order('created_at', { ascending: false }),
+      supabaseAdmin
+        .from('color_copies_orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+    ])
+    
+    const { data: tshirtOrders, error: tshirtError } = tshirtResult
+    const { data: colorCopiesOrders, error: colorCopiesError } = colorCopiesResult
     
     if (tshirtError) {
       console.error('T-shirt orders error:', tshirtError)
     }
-    
-    // Fetch Color Copies orders
-    const { data: colorCopiesOrders, error: colorCopiesError } = await supabaseAdmin
-      .from('color_copies_orders')
-      .select('*')
-      .order('created_at', { ascending: false })
     
     if (colorCopiesError) {
       console.error('Color Copies orders error:', colorCopiesError)

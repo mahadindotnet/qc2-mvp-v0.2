@@ -157,8 +157,22 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!isAuthenticated) return
     
-    fetchOrders()
-    fetchQuotes()
+    // Load data in parallel for better performance
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        await Promise.all([
+          fetchOrders(),
+          fetchQuotes()
+        ])
+      } catch (error) {
+        console.error('Error loading admin data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
@@ -167,9 +181,9 @@ export default function AdminDashboard() {
         fetchQuotes()
       }
     }, 30000)
-    
+
     return () => clearInterval(interval)
-  }, [autoRefresh])
+  }, [autoRefresh, isAuthenticated])
 
   // Check for updates and show notifications
   const checkForUpdates = async () => {
@@ -428,8 +442,6 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching orders:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -1140,8 +1152,13 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading admin dashboard...</p>
+          </div>
+        </div>
       </div>
     )
   }
