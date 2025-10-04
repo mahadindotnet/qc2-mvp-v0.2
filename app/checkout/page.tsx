@@ -40,6 +40,14 @@ interface OrderItem {
     areaId: string
     instructions: string
   }>
+  gangsheet_data?: {
+    gangsheet_height: number
+    gangsheet_width: number
+    setup_type: string
+    gangsheet_area: number
+    turnaround_time_label: string
+    turnaround_time_price: number
+  }
 }
 
 interface CustomerDetails {
