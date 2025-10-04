@@ -266,6 +266,12 @@ export default function CustomGangsheetForm() {
     setIsSubmitting(true)
 
     try {
+      // Calculate pricing first
+      const heightInInches = formData.gangsheetHeight * 12 // Convert feet to inches
+      const basePrice = heightInInches * COST_PER_SQUARE_INCH // Price based on height only
+      const turnaroundPrice = getTurnaroundPrice(formData.turnaroundTime)
+      const totalPrice = basePrice + turnaroundPrice
+
       // Prepare gangsheet data for checkout API
       const gangsheetData = {
         gangsheet_height: formData.gangsheetHeight,
@@ -288,12 +294,6 @@ export default function CustomGangsheetForm() {
         contact_details: formData.contactDetails,
         cost_per_square_inch: COST_PER_SQUARE_INCH
       }
-
-      // Calculate pricing
-      const heightInInches = formData.gangsheetHeight * 12 // Convert feet to inches
-      const basePrice = heightInInches * COST_PER_SQUARE_INCH // Price based on height only
-      const turnaroundPrice = getTurnaroundPrice(formData.turnaroundTime)
-      const totalPrice = basePrice + turnaroundPrice
 
       // Prepare order data for checkout
       const orderData = {
